@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<SplitPane dividerPositions="0.5" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefHeight="400.0" prefWidth="364.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MainController">
+  <items>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="188.0" prefWidth="592.0">
+         <children>
+            <Label layoutX="14.0" layoutY="14.0" text="Выберите файл для исследования:">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
+            <TextField layoutX="14.0" layoutY="44.0" prefHeight="25.0" prefWidth="248.0" />
+            <Button layoutX="285.0" layoutY="44.0" mnemonicParsing="false" text="Открыть" />
+            <Button layoutX="14.0" layoutY="76.0" mnemonicParsing="false" text="Далее" />
+            <Label layoutX="14.0" layoutY="134.0" prefHeight="48.0" prefWidth="248.0" text="Или выберите SID из сохраненных&#10;для дальнейшего исследования:" wrapText="true">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
+         </children>
+    </AnchorPane>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+         <children>
+            <ListView layoutY="-2.0" prefHeight="200.0" prefWidth="600.0" />
+            <TableView layoutY="24.0" prefHeight="174.0"
+                       prefWidth="362.0" fx:id="ownerTable">
+              <columns>
+                <TableColumn editable="false" prefWidth="31.0"
+                             text="№" fx:id="columnNum"/>
+                  <TableColumn editable="false" prefWidth="330.0"
+                               text="SID" fx:id="userSid"/>
+              </columns>
+            </TableView>
+            <Label layoutX="117.0" layoutY="1.0" text="Сохраненные SID" textAlignment="CENTER">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+         </children>
+    </AnchorPane>
+  </items>
+</SplitPane>

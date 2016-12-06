@@ -1,4 +1,4 @@
-package methods;
+package classes;
 
 import java.io.File;
 import java.util.HashMap;
@@ -9,7 +9,7 @@ import java.util.HashMap;
 public class User {
     private int id;
     private String sid;
-    private HashMap<String, String> files;
+    private HashMap<String, String> files; // ключ - абсолютный путь файла, значения - имя файла
 
     public User(int id, String sid, HashMap<String, String> files) {
         this.id = id;
@@ -28,8 +28,25 @@ public class User {
         this.id = id;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        return getSid().equals(user.getSid());
+
+    }
+
+    @Override
+    public int hashCode() {
+        return getSid().hashCode();
+    }
+
     public String getSid() {
         return sid;
+
     }
 
     public void setSid(String sid) {

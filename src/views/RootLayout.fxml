@@ -6,7 +6,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<SplitPane dividerPositions="0.5" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefHeight="400.0" prefWidth="364.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MainController">
+<SplitPane fx:id="rootLayout" dividerPositions="0.5" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefHeight="400.0" prefWidth="364.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MainController">
   <items>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="188.0" prefWidth="592.0">
          <children>
@@ -16,8 +16,10 @@
                </font>
             </Label>
             <TextField fx:id="input" layoutX="14.0" layoutY="44.0" prefHeight="25.0" prefWidth="248.0" />
-            <Button layoutX="272.0" layoutY="44.0" mnemonicParsing="false" onAction="#handleFile" text="Открыть" />
-            <Button layoutX="75.0" layoutY="79.0" mnemonicParsing="false" onAction="#handleCancel" text="Очистить" />
+            <Button layoutX="272.0" layoutY="44.0" mnemonicParsing="false"
+                    onAction="#handleFile" text="Открыть" />
+            <Button layoutX="75.0" layoutY="79.0" mnemonicParsing="false"
+                    onAction="#handleCancel" text="Очистить" />
              <Button fx:id="okButton" disable="true" layoutX="14.0" layoutY="79.0" mnemonicParsing="false"
                      onAction="#handleOk" text="Далее" />
             <Label layoutX="14.0" layoutY="134.0" prefHeight="48.0" prefWidth="248.0" text="Или выберите SID из сохраненных&#10;для дальнейшего исследования:" wrapText="true">
@@ -33,8 +35,8 @@
             <ListView layoutY="-2.0" prefHeight="200.0" prefWidth="600.0" />
             <TableView fx:id="ownerTable" layoutY="24.0" prefHeight="174.0" prefWidth="362.0">
               <columns>
-                <TableColumn fx:id="columnNum" editable="false" prefWidth="31.0" text="№" />
-                  <TableColumn fx:id="userSid" editable="false" prefWidth="330.0" text="SID" />
+                <TableColumn fx:id="id" editable="false" prefWidth="31.0" text="№" />
+                  <TableColumn fx:id="sid" editable="false" prefWidth="330.0" text="SID" />
               </columns>
             </TableView>
             <Label layoutX="117.0" layoutY="1.0" text="Сохраненные SID" textAlignment="CENTER">

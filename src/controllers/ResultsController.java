@@ -1,6 +1,8 @@
 package controllers;
 
 
+import classes.SidFoundEvent;
+import classes.newSidListener;
 import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -20,6 +22,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.ResourceBundle;
 
 public class ResultsController implements Initializable {
@@ -31,17 +34,19 @@ public class ResultsController implements Initializable {
     @FXML
     DirectoryChooser dirChooser;
     private Stage dialogStage;
+    private Main main;
 
-    //    public void setMain(Main mainApp) {
-//        this.mainApp = mainApp;
-//    }
+    private void setMain(Main main) {
+        this.main = main;
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        for (int i = 0; i < Main.ownerAttributes.size(); i++) {
-            results.appendText(Main.ownerAttributes.get(i) + ";\n");
-        }
-        EventType eventType = new EventType("sidAdded");
-
+//        for (int i = 0; i < Main.ownerAttributes.size(); i++) {
+//            results.appendText(Main.ownerAttributes.get(i) + ";\n");
+//        }
+        setMain(new Main());
+        results.appendText(String.valueOf(Main.singleFileOwner));
     }
 
     @FXML
@@ -81,14 +86,26 @@ public class ResultsController implements Initializable {
         HashMap<String, String> tempFiles = new HashMap<>();
         File tempFile = new File(Main.singleFilePath);
         tempFiles.put(tempFile.getAbsolutePath(), tempFile.getName());
-        User temp = new User(size + 1, getSid(Main.singleFileOwner),tempFiles);
+        User temp = new User(size + 1, getSid(Main.singleFileOwner), tempFiles);
         if (!isInUserList(temp)) {
-            Main.userList.add(size + 1, temp);
+            Main.userList.add(size, temp);
+        }
+        this.saveButton.getScene().getWindow().hide();
+        //_fireSidFoundEvent();
+    }
 
+    private void _fireSidFoundEvent() {
+        SidFoundEvent event = new SidFoundEvent(this, Main.singleFileOwner.toString());
+        for (Object _listener : main._listeners) {
+            ((newSidListener) _listener).newSidFound(event);
         }
     }
 
-    public String getSid(UserPrincipal user) {
+    public synchronized void addMoodListener(newSidListener l) {
+        main._listeners.add(l);
+    }
+
+    private String getSid(UserPrincipal user) {
         Field f;
         String result = "";
         try {
@@ -102,11 +119,11 @@ public class ResultsController implements Initializable {
         return result;
     }
 
-    public boolean isInUserList(User candidate) {
+    private boolean isInUserList(User candidate) {
         for (User anUserList : Main.userList) {
             if (anUserList.equals(candidate))
                 return true;
         }
-        return true;
+        return false;
     }
 }

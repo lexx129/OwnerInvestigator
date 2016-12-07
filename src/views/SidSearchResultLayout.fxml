@@ -18,7 +18,9 @@
             <Font size="13.0" />
          </font>
       </TextArea>
-      <Button fx:id="addButton" layoutX="14.0" layoutY="202.0" mnemonicParsing="false" onAction="#handleListAdd" text="Добавить в список" />
-      <Button fx:id="saveButton" layoutX="142.0" layoutY="202.0" mnemonicParsing="false" onAction="#handleSave" text="Сохранить в файл" />
+      <Button layoutX="14.0" layoutY="202.0" mnemonicParsing="false"
+              onAction="#handleListAdd" text="Добавить в список" />
+      <Button fx:id="saveButton" layoutX="142.0" layoutY="202.0" mnemonicParsing="false"
+              onAction="#handleSave" text="Сохранить в файл" />
    </children>
 </AnchorPane>

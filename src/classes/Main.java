@@ -13,6 +13,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Main extends Application {
     private Stage primaryStage;
@@ -26,6 +27,8 @@ public class Main extends Application {
 
     public static ObservableList<User> userList = FXCollections.observableArrayList();
 
+    public List _listeners = new ArrayList();
+
     @Override
     public void start(Stage primaryStage) throws Exception{
         this.primaryStage = primaryStage;
@@ -38,7 +41,7 @@ public class Main extends Application {
         loader.setLocation(getClass().getResource("/views/RootLayout.fxml"));
         rootLayout = loader.load();
 //        MainController mainController = loader.getController();
-        
+
 //        mainController.setMain(this);
         Scene scene = new Scene(rootLayout);
         primaryStage.setScene(scene);
@@ -59,6 +62,8 @@ public class Main extends Application {
             // Show the scene containing the root layout.
             Scene scene = new Scene(resultsLayout);
             resultStage.setScene(scene);
+//            resultStage.setX(rootLayout.getLayoutX() + 300);
+//            resultStage.setY(rootLayout.getLayoutY() + 300);
             resultStage.show();
 
         } catch (IOException e) {

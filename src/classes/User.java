@@ -46,7 +46,6 @@ public class User {
 
     public String getSid() {
         return sid;
-
     }
 
     public void setSid(String sid) {

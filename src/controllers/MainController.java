@@ -1,34 +1,36 @@
 package controllers;
 
+import classes.*;
+import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.Parent;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import classes.FileOwner;
-import classes.Main;
-import classes.User;
+import javafx.util.Callback;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.util.Properties;
 
-public class MainController {
+public class MainController implements newSidListener {
 
     private Main main;
 
     @FXML
     private TableView<User> ownerTable;
     @FXML
-    private TableColumn<User, Integer> columnNum;
+    private TableColumn<User, Integer> id;
     @FXML
-    private TableColumn<User, String> userSid;
+    private TableColumn<User, String> sid;
 
+
+    @FXML
+    SplitPane rootLayout;
     @FXML
     FileChooser fileChooser;
     @FXML
@@ -52,9 +54,34 @@ public class MainController {
 
     @FXML
     private void initialize() {
-        columnNum.setCellValueFactory(new PropertyValueFactory<User, Integer>("№"));
-        userSid.setCellValueFactory(new PropertyValueFactory<User, String>("SID"));
         setMain(new Main());
+        id.setCellValueFactory(new PropertyValueFactory<User, Integer>("id"));
+        sid.setCellValueFactory(new PropertyValueFactory<User, String>("sid"));
+        ownerTable.setItems(Main.userList);
+
+        ownerTable.setRowFactory(new Callback<TableView<User>, TableRow<User>>() {
+            @Override
+            public TableRow<User> call(TableView<User> param) {
+                final TableRow<User> row = new TableRow<User>();
+                final ContextMenu contextMenu = new ContextMenu();
+                final MenuItem showInfoItem = new MenuItem("Показать расширенную информацию");
+                showInfoItem.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        
+                    }
+                });
+                contextMenu.getItems().add(showInfoItem);
+                // настраиваем выпадение меню только для непустой строки
+                row.contextMenuProperty().bind(
+                        Bindings.when(row.emptyProperty())
+                        .then((ContextMenu)null)
+                        .otherwise(contextMenu)
+                );
+                return row;
+            }
+        });
+
     }
 
     @FXML
@@ -104,12 +131,15 @@ public class MainController {
     @FXML
     private void handleCancel() {
         Main.singleFilePath = "";
-        this.okButton.getScene().getWindow().hide();
+        input.setText("");
+//        this.okButton.getScene().getWindow().hide();
     }
 
 
-
-
+    @Override
+    public void newSidFound(SidFoundEvent event) {
+        System.out.println("Wow, we received something!");
+    }
 }
 
 

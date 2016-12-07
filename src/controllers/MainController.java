@@ -5,6 +5,7 @@ import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -13,7 +14,9 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
+import javax.naming.NamingException;
 import java.io.*;
+import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.util.Properties;
 
@@ -62,13 +65,24 @@ public class MainController implements newSidListener {
         ownerTable.setRowFactory(new Callback<TableView<User>, TableRow<User>>() {
             @Override
             public TableRow<User> call(TableView<User> param) {
-                final TableRow<User> row = new TableRow<User>();
+                final TableRow<User> row = new TableRow<>();
                 final ContextMenu contextMenu = new ContextMenu();
                 final MenuItem showInfoItem = new MenuItem("Показать расширенную информацию");
                 showInfoItem.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent event) {
-                        
+                        FXMLLoader domainSearchLoader = new FXMLLoader(getClass().getResource("/views/domainLoginLayout.fxml"));
+                        try {
+                            Parent domainSearch = domainSearchLoader.load();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        DomainSearchCtrl domainSearchCtrl = domainSearchLoader.getController();
+                        try {
+                            domainSearchCtrl.findOwnerInfo(ownerTable.getItems().get(row.getItem().getId()).getSid());
+                        } catch (NamingException | UnknownHostException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
                 contextMenu.getItems().add(showInfoItem);

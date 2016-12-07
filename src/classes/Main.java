@@ -26,6 +26,8 @@ public class Main extends Application {
     public static ArrayList<String> ownerAttributes = new ArrayList<>();
 
     public static ObservableList<User> userList = FXCollections.observableArrayList();
+    public static String username;
+    public static String password;
 
     public List _listeners = new ArrayList();
 

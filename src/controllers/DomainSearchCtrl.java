@@ -2,7 +2,10 @@ package controllers;
 
 import classes.LDAPConnection;
 import classes.Main;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -14,10 +17,12 @@ import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import static classes.Main.ownerAttributes;
 import static classes.Main.password;
@@ -28,17 +33,29 @@ public class DomainSearchCtrl {
     @FXML
     TextField login;
     @FXML
-    PasswordField passw;
+    PasswordField passwd;
     @FXML
     Button okButton;
+    @FXML
+    Button cancelButton;
 
+    private Main main;
+
+    private void setMain(Main main) {
+        this.main = main;
+    }
+
+    @FXML
+    public void handleCancel(ActionEvent actionEvent) {
+        this.cancelButton.getScene().getWindow().hide();
+    }
 
     @FXML
     private void handleOk() throws UnknownHostException {
         Main.username = "CN=" + login.getText() + ", CN=Users";
-        Main.password = passw.getText();
+        Main.password = passwd.getText();
         try {
-            findOwnerInfo();
+            findOwnerInfo(Main.chosenUser.getSid(), Main.chosenUser.getName());
         } catch (AuthenticationException e) {
             popUpError(1);
         } catch (CommunicationException e) {
@@ -46,11 +63,27 @@ public class DomainSearchCtrl {
         } catch (NamingException e) {
             popUpError(2);
         }
+    }
+    private void popUpError(int type) {
+        Alert alert;
+        switch (type) {
+            case 1:
+                alert = new Alert(Alert.AlertType.ERROR, "Неверный логин/пароль для входа в домен");
+                alert.showAndWait();
+                break;
+            case 2:
+                alert = new Alert(Alert.AlertType.ERROR, "Необходимо ввести логин/пароль для входа в домен");
+                alert.showAndWait();
+                break;
+            case 3:
+                alert = new Alert(Alert.AlertType.WARNING, "Не удалось найти ни одного контроллера домена в сети");
+                alert.showAndWait();
 
+                break;
+        }
     }
 
-    public void findOwnerInfo(String sid) throws NamingException, UnknownHostException {
-
+    private void findOwnerInfo(String sid, String name) throws NamingException, UnknownHostException {
         ownerAttributes = new ArrayList<>();
 
         LDAPConnection ldap = new LDAPConnection();
@@ -62,7 +95,7 @@ public class DomainSearchCtrl {
         try {
             ldapServers = LDAPConnection.findLDAPServersInWindowsDomain(domainName);
         } catch (CommunicationException e) {
-            ownerAttributes.add("Имя владельца: " + owner.getName());
+            ownerAttributes.add("Имя владельца: " + name);
             ownerAttributes.add("SID владельца: " + sid);
             throw e;
         }
@@ -91,7 +124,7 @@ public class DomainSearchCtrl {
                 LdapContext ctx = new InitialLdapContext(env, null);
                 ownerAttributes = ldap.findUserBySID(ctx, ldapSearchBase, sid);
                 if (ownerAttributes.size() == 0)
-                    ownerAttributes.add("Имя владельца: " + owner.getName());
+                    ownerAttributes.add("Имя владельца: " + name);
                 ownerAttributes.add("SID владельца: " + sid);
 
 //                    return ownerAttributes;
@@ -105,9 +138,5 @@ public class DomainSearchCtrl {
             }
             System.out.println(ldapServer);
         }
-
-
     }
-
-
 }

@@ -8,16 +8,26 @@ import java.util.HashMap;
  */
 public class User {
     private int id;
+    private String name;
     private String sid;
     private HashMap<String, String> files; // ключ - абсолютный путь файла, значения - имя файла
 
-    public User(int id, String sid, HashMap<String, String> files) {
+    public User(int id, String name, String sid, HashMap<String, String> files) {
         this.id = id;
+        this.name = name;
         this.sid = sid;
         this.files = files;
     }
 
     public User() {
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getId() {

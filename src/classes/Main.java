@@ -19,6 +19,7 @@ public class Main extends Application {
     private Stage primaryStage;
     private SplitPane rootLayout;
     private AnchorPane resultsLayout;
+    private AnchorPane domainSearchLayout;
     private Stage dialogStage;
 
     public static String singleFilePath = "";
@@ -28,6 +29,7 @@ public class Main extends Application {
     public static ObservableList<User> userList = FXCollections.observableArrayList();
     public static String username;
     public static String password;
+    public static User chosenUser;
 
     public List _listeners = new ArrayList();
 
@@ -71,6 +73,22 @@ public class Main extends Application {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void showDomainSearchLayout(){
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource("/views/domainLoginLayout.fxml"));
+        try {
+            domainSearchLayout = loader.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Stage dsStage = new Stage();
+        dsStage.setTitle("Поиск информации в контроллере домена");
+        Scene scene = new Scene(domainSearchLayout);
+        dsStage.setScene(scene);
+        dsStage.show();
+
     }
 
     public static void main(String[] args) {

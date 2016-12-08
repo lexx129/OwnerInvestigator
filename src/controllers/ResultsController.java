@@ -6,6 +6,7 @@ import classes.newSidListener;
 import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.stage.DirectoryChooser;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.attribute.UserPrincipal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ResourceBundle;
@@ -36,17 +38,28 @@ public class ResultsController implements Initializable {
     private Stage dialogStage;
     private Main main;
 
+    boolean isAcknowledged = false;
+
     private void setMain(Main main) {
         this.main = main;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-//        for (int i = 0; i < Main.ownerAttributes.size(); i++) {
-//            results.appendText(Main.ownerAttributes.get(i) + ";\n");
-//        }
+//
+        Main.ownerAttributes = new ArrayList<>();
         setMain(new Main());
-        results.appendText(String.valueOf(Main.singleFileOwner));
+        if (!Main.singleFileOwner.getName().matches("S-.*")) {
+            System.out.println("This user is registered");
+            isAcknowledged = true;
+            Main.ownerAttributes.add("Имя владельца: " + Main.singleFileOwner.getName());
+
+        }
+        Main.ownerAttributes.add("SID: " + getSid(Main.singleFileOwner));
+        for (int i = 0; i < Main.ownerAttributes.size(); i++) {
+            results.appendText(Main.ownerAttributes.get(i) + ";\n");
+        }
+//        results.appendText(String.valueOf(Main.singleFileOwner));
     }
 
     @FXML
@@ -86,9 +99,21 @@ public class ResultsController implements Initializable {
         HashMap<String, String> tempFiles = new HashMap<>();
         File tempFile = new File(Main.singleFilePath);
         tempFiles.put(tempFile.getAbsolutePath(), tempFile.getName());
-        User temp = new User(size + 1, getSid(Main.singleFileOwner), tempFiles);
+        String name;
+        String currSid = getSid(Main.singleFileOwner);
+        User temp = null;
+        Alert alert;
+        if (isAcknowledged)
+            temp = new User(size + 1, Main.singleFileOwner.getName(), currSid, tempFiles);
+        else
+            temp = new User(size + 1, "NONAME", currSid, tempFiles);
         if (!isInUserList(temp)) {
             Main.userList.add(size, temp);
+        } else {
+            alert = new Alert(Alert.AlertType.INFORMATION, "SID " + currSid + " уже есть в списке.");
+            alert.setTitle("Оповещение");
+            alert.setHeaderText("Внимание!");
+            alert.showAndWait();
         }
         this.saveButton.getScene().getWindow().hide();
         //_fireSidFoundEvent();

@@ -1,10 +1,9 @@
 package controllers;
 
-import classes.LDAPConnection;
+import methods.LDAPConnection;
 import classes.Main;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
@@ -17,18 +16,16 @@ import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import java.net.InetAddress;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import static classes.Main.ownerAttributes;
 import static classes.Main.password;
 import static classes.Main.username;
 
-public class DomainSearchCtrl {
+public class domainSearchCtrl {
 
     @FXML
     TextField login;

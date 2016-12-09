@@ -14,13 +14,14 @@ import java.io.IOException;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Main extends Application {
     private Stage primaryStage;
     private SplitPane rootLayout;
     private AnchorPane resultsLayout;
     private AnchorPane domainSearchLayout;
-    private Stage dialogStage;
+    private AnchorPane selectDirLayout;
 
     public static String singleFilePath = "";
     public static UserPrincipal singleFileOwner;
@@ -44,7 +45,7 @@ public class Main extends Application {
 
         loader.setLocation(getClass().getResource("/views/RootLayout.fxml"));
         rootLayout = loader.load();
-//        MainController mainController = loader.getController();
+//        mainController mainController = loader.getController();
 
 //        mainController.setMain(this);
         Scene scene = new Scene(rootLayout);
@@ -57,7 +58,7 @@ public class Main extends Application {
         try {
             // Load root layout from fxml file.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(getClass().getResource("/views/SidSearchResultLayout.fxml"));
+            loader.setLocation(getClass().getResource("/views/GetSidResultLayout.fxml"));
             resultsLayout = loader.load();
             Stage resultStage = new Stage();
             resultStage.setTitle("Результат");
@@ -88,10 +89,32 @@ public class Main extends Application {
         Scene scene = new Scene(domainSearchLayout);
         dsStage.setScene(scene);
         dsStage.show();
+    }
+
+    public void showFileSearcherLayout(String what) {
+        FXMLLoader loader = new FXMLLoader();
+        if (what.equals("selectDir")) {
+            loader.setLocation(getClass().getResource("/views/selectDirLayout.fxml"));
+            try {
+                selectDirLayout = loader.load();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Stage dirStage = new Stage();
+            dirStage.setTitle("Поиск файлов указанного владельца");
+            Scene dirScene = new Scene(selectDirLayout);
+            dirStage.setScene(dirScene);
+            dirStage.show();
+        }
+        else if (what.equals("foundFiles")){
+            loader.setLocation(getClass().getResource("views/foundFilesLayout.fxml"));
+        }
 
     }
 
     public static void main(String[] args) {
         launch(args);
     }
+
+
 }

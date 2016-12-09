@@ -11,12 +11,13 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import methods.FileOwner;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.util.Properties;
 
-public class MainController implements newSidListener {
+public class mainController implements newSidListener {
 
     private Main main;
 
@@ -54,6 +55,7 @@ public class MainController implements newSidListener {
     @FXML
     private void initialize() {
         setMain(new Main());
+        ownerTable.setPlaceholder(new Label("Нет элементов для отображения"));
         id.setCellValueFactory(new PropertyValueFactory<User, Integer>("id"));
         sid.setCellValueFactory(new PropertyValueFactory<User, String>("sid"));
         ownerTable.setItems(Main.userList);
@@ -64,6 +66,7 @@ public class MainController implements newSidListener {
                 final TableRow<User> row = new TableRow<>();
                 final ContextMenu contextMenu = new ContextMenu();
                 final MenuItem showInfoItem = new MenuItem("Показать расширенную информацию");
+                final MenuItem searchFilesItem = new MenuItem("Искать все файлы этого пользователя");
                 showInfoItem.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent event) {
@@ -73,7 +76,7 @@ public class MainController implements newSidListener {
 //                        } catch (IOException e) {
 //                            e.printStackTrace();
 //                        }
-//                        DomainSearchCtrl domainSearchCtrl = domainSearchLoader.getController();
+//                        domainSearchCtrl domainSearchCtrl = domainSearchLoader.getController();
 //                        try {
 
                         Main.chosenUser = ownerTable.getItems().get(row.getItem().getId() - 1);
@@ -82,6 +85,13 @@ public class MainController implements newSidListener {
 //                        } catch (NamingException | UnknownHostException e) {
 //                            e.printStackTrace();
 //                        }
+                    }
+                });
+                searchFilesItem.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        Main.chosenUser = ownerTable.getItems().get(row.getItem().getId() - 1);
+                        main.showFileSearcherLayout("");
                     }
                 });
                 contextMenu.getItems().add(showInfoItem);
@@ -148,7 +158,6 @@ public class MainController implements newSidListener {
         input.setText("");
 //        this.okButton.getScene().getWindow().hide();
     }
-
 
     @Override
     public void newSidFound(SidFoundEvent event) {

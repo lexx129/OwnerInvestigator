@@ -1,4 +1,4 @@
-package classes;
+package methods;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;

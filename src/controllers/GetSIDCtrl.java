@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ResourceBundle;
 
-public class ResultsController implements Initializable {
+public class getSidCtrl implements Initializable {
 
     @FXML
     private TextArea results;
@@ -130,7 +130,7 @@ public class ResultsController implements Initializable {
         main._listeners.add(l);
     }
 
-    private String getSid(UserPrincipal user) {
+    public String getSid(UserPrincipal user) {
         Field f;
         String result = "";
         try {

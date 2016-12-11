@@ -10,27 +10,44 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class Main extends Application {
+
     private Stage primaryStage;
     private SplitPane rootLayout;
     private AnchorPane resultsLayout;
     private AnchorPane domainSearchLayout;
     private AnchorPane selectDirLayout;
 
+    // переменные для информации о владельце
     public static String singleFilePath = "";
     public static UserPrincipal singleFileOwner;
+    public static String dirPath = "";
+
+    // список найденных в папке владельцев
+    public static ArrayList<UserPrincipal> dirFileOwners = new ArrayList<>();
+    // список атрибутов конкретного пользователя
     public static ArrayList<String> ownerAttributes = new ArrayList<>();
 
+    // '1' - вывод результата иссл. 1 файла;
+    // '2' - вывод результата иссл. папки
+    public static int resultSwitch;
+
+    // список добавленных SID
     public static ObservableList<User> userList = FXCollections.observableArrayList();
+    // данные для поиска по домену
     public static String username;
     public static String password;
+    // выбранный SID из списка сохраненных
     public static User chosenUser;
+
+    // найденные файлы выбранного из списка владельца
+    public static ObservableList<File> filesOfUser = FXCollections.observableArrayList();
 
     public List _listeners = new ArrayList();
 
@@ -58,7 +75,7 @@ public class Main extends Application {
         try {
             // Load root layout from fxml file.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(getClass().getResource("/views/GetSidResultLayout.fxml"));
+            loader.setLocation(getClass().getResource("/views/getOwnerLayout.fxml"));
             resultsLayout = loader.load();
             Stage resultStage = new Stage();
             resultStage.setTitle("Результат");

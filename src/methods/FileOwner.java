@@ -2,6 +2,7 @@ package methods;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.ArrayList;
@@ -14,25 +15,48 @@ public class FileOwner {
         return Files.getOwner(file.toPath());
     }
 
-    public static ArrayList<UserPrincipal> scanDirectory(File rootDir) {
-        System.out.println(rootDir);
+    public static ArrayList<UserPrincipal> scanDirectory(File rootDir, boolean letBypass) {
+//        System.out.println(rootDir);
         UserPrincipal owner;
-
+        AclManager manager = new AclManager();
         File[] filesInDir = rootDir.listFiles();
+        if (filesInDir != null){
+            try {
+                if (!rootDir.createNewFile()){
 
-        try {
-            for (File file : filesInDir) {
-                if (file.isDirectory())
-                    scanDirectory(file);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        if (filesInDir != null) {
+            for (int i = 0; i < filesInDir.length; i++) {
+                if (filesInDir[i].isDirectory())
+                    scanDirectory(filesInDir[i], letBypass);
                 else {
-                    owner = Files.getOwner(file.toPath());
-                    if (!owners.contains(owner))
-                        owners.add(owner);
-                    //  System.out.println(owner);
+                    try {
+                        owner = Files.getOwner(filesInDir[i].toPath());
+                        if (!owners.contains(owner))
+                            owners.add(owner);
+                        //  System.out.println(owner);
+                    } catch (AccessDeniedException exc) {
+                        if (letBypass) {
+
+
+                            try {
+                                manager.getFileAccess(System.getProperty("user.name"), filesInDir[i]);
+                                i--;
+                            } catch (NoSuchMethodException | IllegalAccessException | InstantiationException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return owners;
     }

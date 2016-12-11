@@ -1,15 +1,15 @@
 package methods;
 
 import classes.Main;
-import controllers.domainSearchCtrl;
-import controllers.getSidCtrl;
+import controllers.getOwnerCtrl;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.UserPrincipal;
 import java.util.ArrayList;
+
+// Класс, реализующий функционал прохода по папкам
 
 public class FileFinder extends SimpleFileVisitor<Path> {
 
@@ -25,33 +25,44 @@ public class FileFinder extends SimpleFileVisitor<Path> {
     }
 
     private void compare(Path path) throws IOException {
-        getSidCtrl sidCtrl = new getSidCtrl();
-        String currOwnerSid = sidCtrl.getSid(Files.getOwner(path.toAbsolutePath()));
+        getOwnerCtrl sidCtrl = new getOwnerCtrl();
+        String currOwnerSid = null;
+        currOwnerSid = sidCtrl.getSid(Files.getOwner(path.toAbsolutePath()));
 
         if (currOwnerSid.equals(sidPattern)) {
             numMatches++;
-            //  File file = new File(path));
-            found_files.add(path.toFile());
+            //  File file = new File(pathToFile));
+            Main.filesOfUser.add(path.toFile());
         }
     }
 
-    private void done() throws IOException {
-        Main.writer.write("Совпадений : " + numMatches + "\r\n");
+    private void processDenied(Path deniedPath){
+        AclManager manager = new AclManager();
+
+        try {
+            manager.getFileAccess(System.getProperty("user.name"), deniedPath.toFile());
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void done() throws IOException {
+        System.out.println("Найдено файлов : " + numMatches);
 //        System.out.println("Matched: " + numMatches);
         if (numMatches == 0)
-            Main.writer.write("В указанной директории совпадений не обнаружено \r\n");
+            System.out.println("В указанной директории совпадений не обнаружено");
 //            System.out.println("No files found in given directory");
         else {
-            Main.writer.write("Найденные файлы: \r\n");
+            System.out.println("Найденные файлы:");
 //            System.out.println("Files found: ");
-            for (File found_file : found_files) {
-                Main.writer.write(String.valueOf(found_file) + "\r\n");
+            for (File found_file : Main.filesOfUser) {
+                System.out.println(String.valueOf(found_file));
 //                System.out.println(found_file);
             }
             if (!check_failed.isEmpty()) {
-                Main.writer.write("\r\n Не удалось проверить (нет доступа): \r\n");
+                System.out.println("Не удалось проверить (нет доступа):");
                 for (File failed : check_failed) {
-                    Main.writer.write(String.valueOf((failed)) + "\r\n");
+                    System.out.println(String.valueOf((failed)));
                 }
             }
         }
@@ -72,18 +83,8 @@ public class FileFinder extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
         System.out.println("Access to file '" + file.toString() + "' is denied");
-        if (bypassAccess) {
-            UserPrincipal user = null;
-            try {
-                user = FileSystems.getDefault().getUserPrincipalLookupService().lookupPrincipalByName(System.getProperty("user.name"));
-//            System.out.println(user.getName());
-                if (AclManager.getAccess(user.getName()) == 0) { // добавление доступа прошло успешно
-                    visitFile(file, )
-                }
-            } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | IOException e) {
-                e.printStackTrace();
-            }
-        }
+        if (bypassAccess)
+            processDenied(file);
         if (!check_failed.contains(file.toFile()))
             check_failed.add(file.toFile());
         return FileVisitResult.CONTINUE;

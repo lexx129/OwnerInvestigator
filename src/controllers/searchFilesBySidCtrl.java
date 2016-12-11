@@ -1,12 +1,10 @@
 package controllers;
 
+import javafx.scene.control.*;
 import methods.FileFinder;
 import classes.Main;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
@@ -14,6 +12,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+// Контроллер формы, отвечающей за поиск всех файлов
+// владельца с выбранным SID из списка
 
 public class searchFilesBySidCtrl {
 
@@ -23,6 +24,24 @@ public class searchFilesBySidCtrl {
     Button continueButton;
     @FXML
     CheckBox bypassAccess;
+
+    // объекты формы с результатом поиска
+    @FXML
+    TableView<File> foundFilesList;
+    @FXML
+    TableColumn<File, String> fileName;
+    @FXML
+    TableColumn<File, String> fileChangeDate;
+    @FXML
+    TableColumn<File, String> fileType;
+    @FXML
+    TableColumn<File, Long> fileSize;
+    @FXML
+    TextField searchTarget;
+    @FXML
+    TextField foundFilesAmount;
+    @FXML
+    ProgressIndicator progressIndicator;
 
     private Stage dialogStage;
     private String pathToSearch;
@@ -47,7 +66,13 @@ public class searchFilesBySidCtrl {
     @FXML
     private void handleNext() {
         if (pathToSearch != null) {
+            try {
+                findFiles();
 
+                this.continueButton.getScene().getWindow().hide();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -60,12 +85,10 @@ public class searchFilesBySidCtrl {
         //   ArrayList<File> found_files;
         File dir = new File(pathToSearch);
         Path startingDir = dir.toPath();
-        FileFinder finder = new FileFinder();
+        FileFinder finder = new FileFinder(bypassAccess.isSelected());
         finder.sidPattern = targetSid;
         Files.walkFileTree(startingDir, finder);
         //   found_files = finder.found_files;
         finder.done();
-        writer.close();
-        open(savepath + "\\" + ("result.txt"));
     }
 }

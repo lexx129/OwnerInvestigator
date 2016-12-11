@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -27,25 +28,38 @@ public class mainController implements newSidListener {
     private TableColumn<User, Integer> id;
     @FXML
     private TableColumn<User, String> sid;
+    @FXML
+    private TableColumn<User, String> name;
 
 
     @FXML
     SplitPane rootLayout;
     @FXML
     FileChooser fileChooser;
+
     @FXML
+    DirectoryChooser dirChooser;
     private Button openButton;
     @FXML
-    public Path path;
+    public Path pathToFile;
     @FXML
-    private Button okButton;
+    private Path pathToDir;
+    @FXML
+    private Button okButton; // "Продолжить" из выбора файла
+    @FXML
+    private Button okButton2; // "Продолжить" из выбора папки
     @FXML
     private Button cancelButton;
     @FXML
-    private TextField input;
+    private TextField fileInput;
+    @FXML
+    private TextField dirInput;
     @FXML
     private AnchorPane resultsLayout;
+    @FXML
+    private CheckBox dirBypassAccess;
     private Stage dialogStage;
+    private Properties props;
 
 
     private void setMain(Main main) {
@@ -58,6 +72,7 @@ public class mainController implements newSidListener {
         ownerTable.setPlaceholder(new Label("Нет элементов для отображения"));
         id.setCellValueFactory(new PropertyValueFactory<User, Integer>("id"));
         sid.setCellValueFactory(new PropertyValueFactory<User, String>("sid"));
+        name.setCellValueFactory(new PropertyValueFactory<User,String>("name"));
         ownerTable.setItems(Main.userList);
 
         ownerTable.setRowFactory(new Callback<TableView<User>, TableRow<User>>() {
@@ -91,10 +106,11 @@ public class mainController implements newSidListener {
                     @Override
                     public void handle(ActionEvent event) {
                         Main.chosenUser = ownerTable.getItems().get(row.getItem().getId() - 1);
-                        main.showFileSearcherLayout("");
+                        main.showFileSearcherLayout("selectDir");
                     }
                 });
                 contextMenu.getItems().add(showInfoItem);
+                contextMenu.getItems().addAll(searchFilesItem);
                 // настраиваем выпадение меню только для непустой строки
                 row.contextMenuProperty().bind(
                         Bindings.when(row.emptyProperty())
@@ -104,65 +120,113 @@ public class mainController implements newSidListener {
                 return row;
             }
         });
-
+        props = new Properties();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        InputStream is;
+        try {
+            is = new FileInputStream(".\\ownerInvestigator.properties");
+            props.load(is);
+        } catch (FileNotFoundException e1) {
+            System.out.println("Can't find file with props!");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
     private void handleFile(ActionEvent e) throws IOException {
-//        input = new TextField();
+//        fileInput = new TextField();
 //        stage = new Stage();
         fileChooser = new FileChooser();
         fileChooser.setTitle("Выбрать файл..");
-        Properties props = new Properties();
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        InputStream is;
-        try {
-            is = new FileInputStream(".\\preDiploma.properties");
-            props.load(is);
-        } catch (FileNotFoundException e1) {
-            System.out.println("***caught!***");
-        }
-//        File file1 = new File(".\\preDiploma.properties");
+
+//        File file1 = new File(".\\ownerInvestigator.properties");
 //        System.out.println(file1.getAbsolutePath());
         OutputStream os;
         File initial;
-        if (props.getProperty("initial_directory") != null) {
-            initial = new File(props.getProperty("initial_directory"));
+        if (props.getProperty("file_last_directory") != null) {
+            initial = new File(props.getProperty("file_last_directory"));
             fileChooser.setInitialDirectory(initial);
         }
         File file = fileChooser.showOpenDialog(dialogStage);
         if (file != null) {
-            os = new FileOutputStream(".\\preDiploma.properties");
-            props.setProperty("initial_directory", file.getParent());
+            os = new FileOutputStream(".\\ownerInvestigator.properties");
+            props.setProperty("file_last_directory", file.getParent());
             props.store(os, null);
             os.close();
-            path = file.toPath();
+            pathToFile = file.toPath();
             this.okButton.setDisable(false);
-            input.setText(file.toString());
+            fileInput.setText(file.toString());
         }
     }
 
     @FXML
-    private void handleOk() throws IOException {
-        if (path != null) {
-            Main.singleFilePath = path.toString();
-            Main.singleFileOwner = FileOwner.scanFile(new File(String.valueOf(path)));
+    private void handleDir(ActionEvent actionEvent) throws IOException {
+        dirChooser = new DirectoryChooser();
+        dirChooser.setTitle("Выбрать папку...");
+        OutputStream os;
+        File initial;
+        if (props.getProperty("dir_last_directory") != null) {
+            initial = new File(props.getProperty("dir_last_directory"));
+            dirChooser.setInitialDirectory(initial);
+        }
+        File file = dirChooser.showDialog(dialogStage);
+        if (file != null) {
+            os = new FileOutputStream(".\\ownerInvestigator.properties");
+            props.setProperty("dir_last_directory", file.getParent());
+            props.store(os, null);
+            os.close();
+            pathToDir = file.toPath();
+            this.okButton2.setDisable(false);
+            dirInput.setText(file.toString());
+        }
+    }
 
+    @FXML
+    // обработчик для вкладки с выбором файла
+    private void fileHandleOk() throws IOException {
+        if (pathToFile != null) {
+            Main.singleFilePath = pathToFile.toString();
+            Main.singleFileOwner = FileOwner.scanFile(new File(String.valueOf(pathToFile)));
+            Main.resultSwitch = 1;
             main.showResultsLayout();
         }
     }
 
     @FXML
-    private void handleCancel() {
+    // обработчик для вкладки с выбором папки
+    private void dirHandleOk() throws IOException {
+        if (pathToDir != null) {
+            Main.dirPath = pathToDir.toString();
+            Main.dirFileOwners = FileOwner.scanDirectory(new File(String.valueOf(pathToDir)), dirBypassAccess.isSelected());
+            Main.resultSwitch = 2;
+            main.showResultsLayout();
+            for (int i = 0; i < Main.dirFileOwners.size(); i++) {
+                System.out.println(Main.dirFileOwners.get(i).getName());
+            }
+        }
+    }
+
+    @FXML
+    private void fileHandleCancel() {
         Main.singleFilePath = "";
-        input.setText("");
-//        this.okButton.getScene().getWindow().hide();
+        fileInput.setText("");
+        okButton.setDisable(true);
+    }
+
+    @FXML
+    private void dirHandleCancel() {
+        Main.dirPath = "";
+        dirInput.setText("");
+        okButton2.setDisable(true);
     }
 
     @Override
     public void newSidFound(SidFoundEvent event) {
         System.out.println("Wow, we received something!");
     }
+
+
 }
 
 

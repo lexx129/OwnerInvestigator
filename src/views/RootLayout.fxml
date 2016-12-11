@@ -6,45 +6,72 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<SplitPane fx:id="rootLayout" dividerPositions="0.5" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefHeight="400.0" prefWidth="364.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.mainController">
-  <items>
-    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="188.0" prefWidth="592.0">
-         <children>
-            <Label layoutX="14.0" layoutY="14.0" text="Выберите файл для исследования:">
-               <font>
-                  <Font size="14.0" />
-               </font>
-            </Label>
-            <TextField fx:id="input" layoutX="14.0" layoutY="44.0" prefHeight="25.0" prefWidth="248.0" />
-            <Button layoutX="272.0" layoutY="44.0" mnemonicParsing="false"
-                    onAction="#handleFile" text="Открыть" />
-            <Button layoutX="75.0" layoutY="79.0" mnemonicParsing="false"
-                    onAction="#handleCancel" text="Очистить" />
-             <Button fx:id="okButton" disable="true" layoutX="14.0" layoutY="79.0" mnemonicParsing="false"
-                     onAction="#handleOk" text="Далее" />
-            <Label layoutX="14.0" layoutY="134.0" prefHeight="48.0" prefWidth="248.0" text="Или выберите SID из сохраненных&#10;для дальнейшего исследования:" wrapText="true">
-               <font>
-                  <Font size="14.0" />
-               </font>
-            </Label>
-
-         </children>
-    </AnchorPane>
-    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-         <children>
-            <ListView layoutY="-2.0" prefHeight="200.0" prefWidth="600.0" />
-            <TableView fx:id="ownerTable" layoutY="24.0" prefHeight="174.0" prefWidth="362.0">
-              <columns>
-                <TableColumn fx:id="id" editable="false" prefWidth="31.0" text="№" />
-                  <TableColumn fx:id="sid" editable="false" prefWidth="330.0" text="SID" />
-              </columns>
-            </TableView>
-            <Label layoutX="117.0" layoutY="1.0" text="Сохраненные SID" textAlignment="CENTER">
-               <font>
-                  <Font size="16.0" />
-               </font>
-            </Label>
-         </children>
-    </AnchorPane>
-  </items>
+<SplitPane fx:id="rootLayout" dividerPositions="0.5" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefHeight="510.0" prefWidth="423.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.mainController">
+    <items>
+        <TabPane>
+            <tabs>
+                <Tab closable="false" text="Исследование файла">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="225.0" prefWidth="362.0">
+                            <children>
+                                <Label layoutX="14.0" layoutY="34.0" text="Выберите файл для исследования:">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                                <TextField fx:id="fileInput" layoutX="15.0" layoutY="65.0" prefHeight="25.0" prefWidth="320.0" />
+                                <Button layoutX="345.0" layoutY="65.0" mnemonicParsing="false" onAction="#handleFile" text="Обзор..." />
+                                <Button layoutX="70.0" layoutY="100.0" mnemonicParsing="false" onAction="#fileHandleCancel" text="Очистить" />
+                                <Button fx:id="okButton" disable="true" layoutX="15.0" layoutY="100.0" mnemonicParsing="false" onAction="#fileHandleOk" text="Далее" />
+                                <Label layoutX="14.0" layoutY="155.0" prefHeight="50.0" prefWidth="300.0" text="Или выберите пользователя из сохраненных&#10;для дальнейшего исследования:" wrapText="true">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+                <Tab closable="false" text="Исследование папки">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="225.0" prefWidth="362.0">
+                            <children>
+                                <Label layoutX="14.0" layoutY="34.0" text="Выберите папку для исследования:">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                                <TextField fx:id="dirInput" layoutX="15.0" layoutY="65.0" prefHeight="25.0" prefWidth="320.0" />
+                                <Button layoutX="345.0" layoutY="65.0" mnemonicParsing="false" onAction="#handleDir" text="Обзор..." />
+                                <Button layoutX="70.0" layoutY="100.0" mnemonicParsing="false" onAction="#dirHandleCancel" text="Очистить" />
+                                <Button fx:id="okButton2" disable="true" layoutX="15.0" layoutY="100.0" mnemonicParsing="false" onAction="#dirHandleOk" text="Далее" />
+                                <CheckBox fx:id="dirBypassAccess" layoutX="15.0" layoutY="135.0" mnemonicParsing="false" selected="true" text="Обходить запрет доступа" />
+                                <Label layoutX="14.0" layoutY="155.0" prefHeight="50.0" prefWidth="300.0" text="Или выберите пользователя из сохраненных&#10;для дальнейшего исследования:" wrapText="true">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="252.0" prefWidth="404.0">
+            <children>
+                <TableView fx:id="ownerTable" layoutY="42.0" prefHeight="209.0" prefWidth="421.0">
+                    <columns>
+                        <TableColumn fx:id="id" editable="false" prefWidth="24.0" text="№" />
+                        <TableColumn fx:id="name" editable="false" prefWidth="82.0" text="Имя" />
+                        <TableColumn fx:id="sid" editable="false" prefWidth="314.0" text="SID" />
+                    </columns>
+                </TableView>
+                <Label layoutX="108.0" layoutY="2.0" text="Сохраненные пользователи" textAlignment="CENTER">
+                    <font>
+                        <Font size="16.0" />
+                    </font>
+                </Label>
+            </children>
+        </AnchorPane>
+    </items>
 </SplitPane>

@@ -185,7 +185,7 @@ public enum RETCODES {
   RTN_ERR_SETENTRIESINACL, // 19
   /**
    * <p>
-   * A registry path is incorrect
+   * A registry pathToFile is incorrect
    * </p>
    * <p>
    * The value of this constant is 20

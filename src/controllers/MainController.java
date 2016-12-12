@@ -120,6 +120,7 @@ public class mainController implements newSidListener {
                 return row;
             }
         });
+        // пытаемся найти последний выбранный путь из файла с настройками
         props = new Properties();
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         InputStream is;

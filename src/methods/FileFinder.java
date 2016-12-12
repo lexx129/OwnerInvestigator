@@ -1,7 +1,9 @@
 package methods;
 
 import classes.Main;
+import classes.myFile;
 import controllers.getOwnerCtrl;
+import controllers.searchBySidResultCtrl;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,20 +21,23 @@ public class FileFinder extends SimpleFileVisitor<Path> {
     private int numMatches = 0;
     private boolean bypassAccess;
     public String sidPattern;
+    private searchBySidResultCtrl searcherCtrl;
+    private getOwnerCtrl ownerCtrl;
 
     public FileFinder(boolean toBypass) {
+        searcherCtrl = new searchBySidResultCtrl();
+        ownerCtrl = new getOwnerCtrl();
         this.bypassAccess = toBypass;
     }
 
     private void compare(Path path) throws IOException {
-        getOwnerCtrl sidCtrl = new getOwnerCtrl();
-        String currOwnerSid = null;
-        currOwnerSid = sidCtrl.getSid(Files.getOwner(path.toAbsolutePath()));
+        String currOwnerSid;
+        currOwnerSid = ownerCtrl.getSid(Files.getOwner(path.toAbsolutePath()));
 
         if (currOwnerSid.equals(sidPattern)) {
             numMatches++;
-            //  File file = new File(pathToFile));
-            Main.filesOfUser.add(path.toFile());
+            myFile file = new myFile(path.toString());
+            Main.filesOfUser.add(file);
         }
     }
 
@@ -41,7 +46,8 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 
         try {
             manager.getFileAccess(System.getProperty("user.name"), deniedPath.toFile());
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException e) {
+            compare(deniedPath);
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | IOException e) {
             e.printStackTrace();
         }
     }

@@ -9,6 +9,7 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import methods.searchBySidService;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +24,7 @@ public class Main extends Application {
     private AnchorPane resultsLayout;
     private AnchorPane domainSearchLayout;
     private AnchorPane selectDirLayout;
+    private AnchorPane searchFilesBySidResultLayout;
 
     // переменные для информации о владельце
     public static String singleFilePath = "";
@@ -47,7 +49,8 @@ public class Main extends Application {
     public static User chosenUser;
 
     // найденные файлы выбранного из списка владельца
-    public static ObservableList<File> filesOfUser = FXCollections.observableArrayList();
+    public static ObservableList<myFile> filesOfUser = FXCollections.observableArrayList();
+    public static searchBySidService searchService;
 
     public List _listeners = new ArrayList();
 
@@ -124,7 +127,17 @@ public class Main extends Application {
             dirStage.show();
         }
         else if (what.equals("foundFiles")){
-            loader.setLocation(getClass().getResource("views/foundFilesLayout.fxml"));
+            loader.setLocation(getClass().getResource("/views/foundFilesLayout.fxml"));
+            try {
+                searchFilesBySidResultLayout = loader.load();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Stage resStage = new Stage();
+            resStage.setTitle("Результаты поиска по SID");
+            Scene resScene = new Scene(searchFilesBySidResultLayout);
+            resStage.setScene(resScene);
+            resStage.show();
         }
 
     }

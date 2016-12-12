@@ -5,13 +5,19 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="145.0" prefWidth="402.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.searchFilesBySidCtrl">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="145.0"
+            prefWidth="402.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.searchFilesBySidCtrl">
     <children>
-        <Label layoutX="14.0" layoutY="14.0" text="Укажите путь к исследуемой папке: " />
-        <TextField fx:id="pathToSearchField" layoutX="14.0" layoutY="42.0" prefHeight="25.0" prefWidth="303.0" promptText="Путь к папке" />
-        <Button layoutX="331.0" layoutY="42.0" mnemonicParsing="false" onAction="#handleDir" text="Обзор.." underline="true" />
-        <Button cancelButton="true" layoutX="14.0" layoutY="106.0" mnemonicParsing="false" onAction="#handleCancel" text="Отмена" />
-        <Button fx:id="continueButton" defaultButton="true" disable="true" layoutX="90.0" layoutY="106.0" mnemonicParsing="false" onAction="#handleNext" text="Далее" />
+        <Label layoutX="14.0" layoutY="14.0" text="Укажите путь к исследуемой папке: "/>
+        <TextField fx:id="pathToSearchField" layoutX="14.0" layoutY="42.0" prefHeight="25.0" prefWidth="303.0"
+                   promptText="Путь к папке"/>
+        <Button layoutX="331.0" layoutY="42.0" mnemonicParsing="false" onAction="#handleDir" text="Обзор.."
+                underline="true"/>
+        <Button cancelButton="true" layoutX="14.0" layoutY="106.0" mnemonicParsing="false" onAction="#handleCancel"
+                text="Отмена"/>
+        <Button fx:id="continueButton" defaultButton="true" disable="true" layoutX="90.0" layoutY="106.0"
+                mnemonicParsing="false" onAction="#handleNext" text="Далее"/>
         <CheckBox fx:id="bypassAccess" ellipsisString="" layoutX="14.0" layoutY="79.0" mnemonicParsing="false"
                   text="Обходить запрет доступа" selected="true"/>
     </children>

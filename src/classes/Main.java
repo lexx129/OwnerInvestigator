@@ -11,7 +11,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import methods.searchBySidService;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.ArrayList;
@@ -23,7 +22,7 @@ public class Main extends Application {
     private SplitPane rootLayout;
     private AnchorPane resultsLayout;
     private AnchorPane domainSearchLayout;
-    private AnchorPane selectDirLayout;
+    private SplitPane searchFilesBySidLayout;
     private AnchorPane searchFilesBySidResultLayout;
 
     // переменные для информации о владельце
@@ -47,6 +46,8 @@ public class Main extends Application {
     public static String password;
     // выбранный SID из списка сохраненных
     public static User chosenUser;
+    // установленный путь поиска
+    public static String searchAllFilesPath;
 
     // найденные файлы выбранного из списка владельца
     public static ObservableList<myFile> filesOfUser = FXCollections.observableArrayList();
@@ -111,34 +112,21 @@ public class Main extends Application {
         dsStage.show();
     }
 
-    public void showFileSearcherLayout(String what) {
+    public void showFileSearcherLayout() {
         FXMLLoader loader = new FXMLLoader();
-        if (what.equals("selectDir")) {
-            loader.setLocation(getClass().getResource("/views/selectDirLayout.fxml"));
+
+            loader.setLocation(getClass().getResource("/views/foundFilesLayout.fxml"));
             try {
-                selectDirLayout = loader.load();
+                searchFilesBySidLayout = loader.load();
             } catch (IOException e) {
                 e.printStackTrace();
             }
             Stage dirStage = new Stage();
             dirStage.setTitle("Поиск файлов указанного владельца");
-            Scene dirScene = new Scene(selectDirLayout);
+            Scene dirScene = new Scene(searchFilesBySidLayout);
             dirStage.setScene(dirScene);
             dirStage.show();
-        }
-        else if (what.equals("foundFiles")){
-            loader.setLocation(getClass().getResource("/views/foundFilesLayout.fxml"));
-            try {
-                searchFilesBySidResultLayout = loader.load();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Stage resStage = new Stage();
-            resStage.setTitle("Результаты поиска по SID");
-            Scene resScene = new Scene(searchFilesBySidResultLayout);
-            resStage.setScene(resScene);
-            resStage.show();
-        }
+
 
     }
 

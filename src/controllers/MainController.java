@@ -18,7 +18,7 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.Properties;
 
-public class mainController implements newSidListener {
+public class mainController {
 
     private Main main;
 
@@ -106,7 +106,7 @@ public class mainController implements newSidListener {
                     @Override
                     public void handle(ActionEvent event) {
                         Main.chosenUser = ownerTable.getItems().get(row.getItem().getId() - 1);
-                        main.showFileSearcherLayout("selectDir");
+                        main.showFileSearcherLayout();
                     }
                 });
                 contextMenu.getItems().add(showInfoItem);
@@ -221,12 +221,6 @@ public class mainController implements newSidListener {
         dirInput.setText("");
         okButton2.setDisable(true);
     }
-
-    @Override
-    public void newSidFound(SidFoundEvent event) {
-        System.out.println("Wow, we received something!");
-    }
-
 
 }
 

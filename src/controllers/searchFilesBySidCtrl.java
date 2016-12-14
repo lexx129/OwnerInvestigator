@@ -1,6 +1,17 @@
 package controllers;
 
+import classes.myFile;
+import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.util.Callback;
 import methods.FileFinder;
 import classes.Main;
 import javafx.event.ActionEvent;
@@ -19,16 +30,38 @@ import java.nio.file.Path;
 
 public class searchFilesBySidCtrl {
 
+    // переменные верхней части окна (выбор файлов)
     @FXML
     TextField pathToSearchField;
     @FXML
     Button continueButton;
     @FXML
     CheckBox bypassAccess;
+    // элементы нижней части формы с результатами поиска
+    @FXML
+    TableView<myFile> foundFilesList;
+    @FXML
+    TableColumn<File, String> fileName;
+    @FXML
+    TableColumn<File, String> fileChangeDate;
+    @FXML
+    TableColumn<File, String> fileType;
+    @FXML
+    TableColumn<File, Long> fileSize;
+    @FXML
+    TextField searchTarget;
+    @FXML
+    TextField foundFilesAmount;
+    @FXML
+    ProgressIndicator progressIndicator;
+    @FXML
+    Label indicatorLabel;
 
     private Stage dialogStage;
     private String pathToSearch;
-
+    Task<ObservableList<myFile>> task;
+    Thread t;
+    Main main;
 
     @FXML
     private void handleDir(ActionEvent e) {
@@ -51,31 +84,138 @@ public class searchFilesBySidCtrl {
     private void handleNext() {
         Main main = new Main();
         if (pathToSearch != null) {
-            Main.searchService = new searchBySidService(pathToSearch, bypassAccess.isSelected());
-            main.showFileSearcherLayout("foundFiles");
-
+            Main.filesOfUser = FXCollections.observableArrayList();
+            // Main.searchService = new searchBySidService(pathToSearch, bypassAccess.isSelected());
+//            t.start();
+            initSearch();
             this.continueButton.getScene().getWindow().hide();
         }
     }
 
-    private void findFiles() throws IOException {
+    //инициализация таблицы вывода найденных файлов и фонового сервиса, выполняющего поиск
+    @FXML
+    void initialize() {
+        this.main = new Main();
 
-//        Main main = new Main();
-//        String targetSid = Main.chosenUser.getSid();
-////                System.out.println("Reference target is: " + owner.toString());
-//
-////        System.out.println("Владелец целевого файла:  " + owner.toString());
-//        //   ArrayList<File> found_files;
-//        File dir = new File(pathToSearch);
-//        Path startingDir = dir.toPath();
-//        FileFinder finder = new FileFinder(bypassAccess.isSelected());
-//        finder.sidPattern = targetSid;
-//        main.showFileSearcherLayout("foundFiles");
-//        Files.walkFileTree(startingDir, finder);
-//        //   found_files = finder.found_files;
-//        finder.done();
+   //        searchTarget.setText(Main.chosenUser.getSid());
+        foundFilesList.setPlaceholder(new Label("Нет элементов для отображения"));
+        // Описываем столбцы таблицы, имена должны совпадать с именами полей
+        fileName.setCellValueFactory(new PropertyValueFactory<File, String>("name"));
+        fileChangeDate.setCellValueFactory(new PropertyValueFactory<File, String>("changeDate"));
+        fileType.setCellValueFactory(new PropertyValueFactory<File, String>("type"));
+        fileSize.setCellValueFactory(new PropertyValueFactory<File, Long>("size"));
+        foundFilesList.setItems(Main.filesOfUser);
+
+        foundFilesList.setRowFactory(new Callback<TableView<myFile>, TableRow<myFile>>() {
+            @Override
+            public TableRow<myFile> call(TableView<myFile> param) {
+                final TableRow<myFile> row = new TableRow<>();
+                final ContextMenu contextMenu = new ContextMenu();
+                final MenuItem showInExplorerItem = new MenuItem("Показать в проводнике");
+                showInExplorerItem.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        try {
+                            // Показ файла в проводнике
+                            File chosen = foundFilesList.getItems().get(row.getIndex());
+                            Runtime.getRuntime().exec("explorer.exe /select," + chosen.getAbsolutePath());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                contextMenu.getItems().add(showInExplorerItem);
+                row.contextMenuProperty().bind(
+                        Bindings.when(row.emptyProperty())
+                                .then((ContextMenu) null)
+                                .otherwise(contextMenu)
+                );
+                return row;
+            }
+        });
     }
 
+    private void initSearch(){
 
+        task = new Task<ObservableList<myFile>>() {
+            @Override
+            protected ObservableList<myFile> call() throws Exception {
+                String targetSid = Main.chosenUser.getSid();
+//                System.out.println("Reference target is: " + owner.toString());
+
+//        System.out.println("Владелец целевого файла:  " + owner.toString());
+                //   ArrayList<File> found_files;
+                File dir = new File(pathToSearch);
+                Path startingDir = dir.toPath();
+                FileFinder finder = new FileFinder(bypassAccess.isSelected());
+                finder.sidPattern = targetSid;
+//                main.showFileSearcherLayout("foundFiles");
+                Files.walkFileTree(startingDir, finder);
+                //   found_files = finder.found_files;
+                finder.done();
+                return null;
+            }
+        };
+
+        Platform.setImplicitExit(false);
+        // настраиваем видимость анимации загрузки и подписи только во время поиска
+        progressIndicator.visibleProperty().bind(task.runningProperty());
+        indicatorLabel.visibleProperty().bind(task.runningProperty());
+
+//        Main.filesOfUser.addListener(new ListChangeListener<myFile>() {
+//            @Override
+//            public void onChanged(Change<? extends myFile> c) {
+////                while (c.next()){
+////                    if (c.wasAdded())
+////                        setCounter(c.getAddedSize());
+//////
+////                }
+//                if (Main.filesOfUser.size() % delay == 0)
+//                    setCounter(Main.filesOfUser.size());
+//            }
+//        });
+
+        progressIndicator.setProgress(-1d);
+//        Main.searchService.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+//            @Override
+//            public void handle(WorkerStateEvent event) {
+//                progressIndicator.setProgress(0d);
+//                //      Main.filesOfUser = Main.searchService.getValue();
+//            }
+//        });
+//        Main.searchService.setOnFailed(new EventHandler<WorkerStateEvent>() {
+//            @Override
+//            public void handle(WorkerStateEvent event) {
+//                System.out.println("Something gone wrong while searching for files by SID");
+//                System.out.println(event.getEventType().getName());
+//                System.out.println(event.getSource().getMessage());
+//            }
+//        });
+        task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                progressIndicator.setProgress(0d);
+            }
+        });
+        task.setOnFailed(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                System.out.println("Something went wrong while searching files..");
+                System.out.println(event.getEventType().getName());
+                System.out.println(event.getSource().getMessage());
+            }
+        });
+
+        Thread t = new Thread(task);
+        foundFilesAmount.textProperty().bind(task.messageProperty());
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void setCounter(long number) {
+//      Long currValue = Long.valueOf(foundFilesAmount.getText());
+//        foundFilesAmount.setText(String.valueOf(currValue + number));
+        foundFilesAmount.setText(String.valueOf(number));
+    }
 
 }

@@ -6,6 +6,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -13,11 +14,14 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
+import methods.FileFinder;
 import methods.searchBySidService;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.PlatformLoggingMXBean;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class searchBySidResultCtrl {
     @FXML
@@ -39,15 +43,14 @@ public class searchBySidResultCtrl {
     @FXML
     Label indicatorLabel;
 
+    private final int delay = 10;
+
     Main main;
 
     @FXML
     void initialize() {
         this.main = new Main();
         searchTarget.setText(Main.chosenUser.getSid());
-
-        foundFilesAmount.setText("0");
-
         foundFilesList.setPlaceholder(new Label("Нет элементов для отображения"));
         // Описываем столбцы таблицы, имена должны совпадать с именами полей
         fileName.setCellValueFactory(new PropertyValueFactory<File, String>("name"));
@@ -93,12 +96,13 @@ public class searchBySidResultCtrl {
         Main.filesOfUser.addListener(new ListChangeListener<myFile>() {
             @Override
             public void onChanged(Change<? extends myFile> c) {
-                while (c.next()){
-                //    if (c.wasAdded())
-                        setCounter(c.getAddedSize());
-
-                }
-                setCounter(Main.filesOfUser.size());
+//                while (c.next()){
+//                    if (c.wasAdded())
+//                        setCounter(c.getAddedSize());
+////
+//                }
+                if (Main.filesOfUser.size() % delay == 0)
+                    setCounter(Main.filesOfUser.size());
             }
         });
 
@@ -107,7 +111,7 @@ public class searchBySidResultCtrl {
             @Override
             public void handle(WorkerStateEvent event) {
                 progressIndicator.setProgress(0d);
-                Main.filesOfUser = Main.searchService.getValue();
+          //      Main.filesOfUser = Main.searchService.getValue();
             }
         });
         Main.searchService.setOnFailed(new EventHandler<WorkerStateEvent>() {
@@ -118,12 +122,16 @@ public class searchBySidResultCtrl {
                 System.out.println(event.getSource().getMessage());
             }
         });
+
+
         Main.searchService.start();
     }
 
     private void setCounter(long number) {
-      Long currValue = Long.valueOf(foundFilesAmount.getText());
-        foundFilesAmount.setText(String.valueOf(currValue + number));
-//        foundFilesAmount.setText(String.valueOf(number));
+//      Long currValue = Long.valueOf(foundFilesAmount.getText());
+//        foundFilesAmount.setText(String.valueOf(currValue + number));
+        foundFilesAmount.setText(String.valueOf(number));
     }
+
+
 }

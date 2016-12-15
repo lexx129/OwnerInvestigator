@@ -2,7 +2,13 @@ package controllers;
 
 import classes.myFile;
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -24,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 
 // Контроллер формы, отвечающей за поиск всех файлов
 // владельца с выбранным SID из списка
@@ -56,10 +63,13 @@ public class searchFilesBySidCtrl {
     ProgressIndicator progressIndicator;
     @FXML
     Label indicatorLabel;
+    public ObservableList<myFile> foundFiles;
+
 
     private Stage dialogStage;
     private String pathToSearch;
-    Task<ObservableList<myFile>> task;
+    public Task<ObservableList<myFile>> task;
+    public ObservableValue<String> value1;
     Thread t;
     Main main;
 
@@ -82,13 +92,13 @@ public class searchFilesBySidCtrl {
 
     @FXML
     private void handleNext() {
-        Main main = new Main();
+
         if (pathToSearch != null) {
             Main.filesOfUser = FXCollections.observableArrayList();
             // Main.searchService = new searchBySidService(pathToSearch, bypassAccess.isSelected());
 //            t.start();
             initSearch();
-            this.continueButton.getScene().getWindow().hide();
+            //    this.continueButton.getScene().getWindow().hide();
         }
     }
 
@@ -97,14 +107,15 @@ public class searchFilesBySidCtrl {
     void initialize() {
         this.main = new Main();
 
-   //        searchTarget.setText(Main.chosenUser.getSid());
+        //        searchTarget.setText(Main.chosenUser.getSid());
         foundFilesList.setPlaceholder(new Label("Нет элементов для отображения"));
         // Описываем столбцы таблицы, имена должны совпадать с именами полей
         fileName.setCellValueFactory(new PropertyValueFactory<File, String>("name"));
         fileChangeDate.setCellValueFactory(new PropertyValueFactory<File, String>("changeDate"));
         fileType.setCellValueFactory(new PropertyValueFactory<File, String>("type"));
         fileSize.setCellValueFactory(new PropertyValueFactory<File, Long>("size"));
-        foundFilesList.setItems(Main.filesOfUser);
+
+
 
         foundFilesList.setRowFactory(new Callback<TableView<myFile>, TableRow<myFile>>() {
             @Override
@@ -135,14 +146,21 @@ public class searchFilesBySidCtrl {
         });
     }
 
-    private void initSearch(){
+    private void initSearch() {
+        foundFiles = FXCollections.observableArrayList();
 
+        ObservableValue<String> value = new ReadOnlyObjectWrapper<>(String.valueOf(Main.filesOfUser.size()));
+        ObservableValue<String> value1 = new SimpleStringProperty(String.valueOf(Main.filesOfUser.size()));
+        //связываем таблицу с найденными файлами с переменной, куда они сохраняются
+
+        foundFilesList.setItems(Main.filesOfUser);
+        foundFilesAmount.setText("0");
         task = new Task<ObservableList<myFile>>() {
             @Override
             protected ObservableList<myFile> call() throws Exception {
                 String targetSid = Main.chosenUser.getSid();
 //                System.out.println("Reference target is: " + owner.toString());
-
+              //  ObservableList<myFile> foundFiles = FXCollections.observableArrayList();
 //        System.out.println("Владелец целевого файла:  " + owner.toString());
                 //   ArrayList<File> found_files;
                 File dir = new File(pathToSearch);
@@ -150,10 +168,13 @@ public class searchFilesBySidCtrl {
                 FileFinder finder = new FileFinder(bypassAccess.isSelected());
                 finder.sidPattern = targetSid;
 //                main.showFileSearcherLayout("foundFiles");
-                Files.walkFileTree(startingDir, finder);
+
+                    Files.walkFileTree(startingDir, finder);
+                    updateMessage(String.valueOf(Main.filesOfUser.size()));
+
                 //   found_files = finder.found_files;
                 finder.done();
-                return null;
+                return foundFiles;
             }
         };
 
@@ -162,18 +183,18 @@ public class searchFilesBySidCtrl {
         progressIndicator.visibleProperty().bind(task.runningProperty());
         indicatorLabel.visibleProperty().bind(task.runningProperty());
 
-//        Main.filesOfUser.addListener(new ListChangeListener<myFile>() {
-//            @Override
-//            public void onChanged(Change<? extends myFile> c) {
-////                while (c.next()){
-////                    if (c.wasAdded())
-////                        setCounter(c.getAddedSize());
-//////
-////                }
-//                if (Main.filesOfUser.size() % delay == 0)
-//                    setCounter(Main.filesOfUser.size());
-//            }
-//        });
+        Main.filesOfUser.addListener(new ListChangeListener<myFile>() {
+            @Override
+            public void onChanged(Change<? extends myFile> c) {
+//                while (c.next()){
+//                    if (c.wasAdded())
+//                        setCounter(c.getAddedSize());
+////
+//                }
+               // if (Main.filesOfUser.size() % delay == 0)
+                    setCounter(Main.filesOfUser.size());
+            }
+        });
 
         progressIndicator.setProgress(-1d);
 //        Main.searchService.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -194,6 +215,7 @@ public class searchFilesBySidCtrl {
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
+              //  foundFilesList.setItems(foundFiles);
                 progressIndicator.setProgress(0d);
             }
         });
@@ -201,20 +223,24 @@ public class searchFilesBySidCtrl {
             @Override
             public void handle(WorkerStateEvent event) {
                 System.out.println("Something went wrong while searching files..");
+                Throwable exc = event.getSource().getException();
+                exc.printStackTrace();
                 System.out.println(event.getEventType().getName());
-                System.out.println(event.getSource().getMessage());
+
             }
         });
 
+
         Thread t = new Thread(task);
-        foundFilesAmount.textProperty().bind(task.messageProperty());
+      //  foundFilesAmount.textProperty().bind(value1);
         t.setDaemon(true);
         t.start();
     }
 
-    private void setCounter(long number) {
+    public void setCounter(int number) {
 //      Long currValue = Long.valueOf(foundFilesAmount.getText());
 //        foundFilesAmount.setText(String.valueOf(currValue + number));
+//        foundFiles = number;
         foundFilesAmount.setText(String.valueOf(number));
     }
 

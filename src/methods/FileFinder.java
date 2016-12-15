@@ -4,6 +4,8 @@ import classes.Main;
 import classes.myFile;
 import controllers.getOwnerCtrl;
 import controllers.searchBySidResultCtrl;
+import controllers.searchFilesBySidCtrl;
+import javafx.application.Platform;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,11 +23,11 @@ public class FileFinder extends SimpleFileVisitor<Path> {
     private int numMatches = 0;
     private boolean bypassAccess;
     public String sidPattern;
-    private searchBySidResultCtrl searcherCtrl;
+    private searchFilesBySidCtrl searcherCtrl;
     private getOwnerCtrl ownerCtrl;
 
     public FileFinder(boolean toBypass) {
-        searcherCtrl = new searchBySidResultCtrl();
+        searcherCtrl = new searchFilesBySidCtrl();
         ownerCtrl = new getOwnerCtrl();
         this.bypassAccess = toBypass;
     }
@@ -37,11 +39,13 @@ public class FileFinder extends SimpleFileVisitor<Path> {
         if (currOwnerSid.equals(sidPattern)) {
             numMatches++;
             myFile file = new myFile(path.toString());
+            //   Main.filesOfUser.add(file);
+
             Main.filesOfUser.add(file);
         }
     }
 
-    private void processDenied(Path deniedPath){
+    private void processDenied(Path deniedPath) {
         AclManager manager = new AclManager();
 
         try {

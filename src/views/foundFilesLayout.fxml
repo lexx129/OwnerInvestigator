@@ -25,7 +25,7 @@
                         text="Очистить"/>
                 <Button fx:id="continueButton" disable="true" layoutX="15.0" layoutY="100.0" mnemonicParsing="false"
                         onAction="#handleNext" text="Далее"/>
-                <CheckBox fx:id="BypassAccess" layoutX="15.0" layoutY="135.0" mnemonicParsing="false" selected="true"
+                <CheckBox fx:id="bypassAccess" layoutX="15.0" layoutY="135.0" mnemonicParsing="false" selected="true"
                           text="Обходить запрет доступа"/>
             </children>
         </AnchorPane>

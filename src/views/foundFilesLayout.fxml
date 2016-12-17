@@ -6,53 +6,48 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<SplitPane fx:id="rootLayout" dividerPositions="0.33267716535433073" maxHeight="-Infinity" maxWidth="-Infinity"
-           minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefHeight="510.0" prefWidth="514.0"
-           xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="controllers.searchFilesBySidCtrl">
+<SplitPane fx:id="rootLayout" dividerPositions="0.33267716535433073" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefHeight="566.0" prefWidth="514.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.searchFilesBySidCtrl">
     <items>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="251.0" prefWidth="444.0">
             <children>
                 <Label layoutX="14.0" layoutY="34.0" text="Выберите папку для исследования:">
                     <font>
-                        <Font size="14.0"/>
+                        <Font size="14.0" />
                     </font>
                 </Label>
-                <TextField fx:id="pathToSearchField" editable="false" layoutX="15.0" layoutY="65.0" prefHeight="25.0"
-                           prefWidth="320.0"/>
-                <Button layoutX="345.0" layoutY="65.0" mnemonicParsing="false" onAction="#handleDir" text="Обзор..."/>
-                <Button layoutX="70.0" layoutY="100.0" mnemonicParsing="false" onAction="#handleCancel"
-                        text="Очистить"/>
-                <Button fx:id="continueButton" disable="true" layoutX="15.0" layoutY="100.0" mnemonicParsing="false"
-                        onAction="#handleNext" text="Далее"/>
-                <CheckBox fx:id="bypassAccess" layoutX="15.0" layoutY="135.0" mnemonicParsing="false" selected="true"
-                          text="Обходить запрет доступа"/>
+                <TextField fx:id="pathToSearchField" editable="false" layoutX="15.0" layoutY="65.0" prefHeight="25.0" prefWidth="320.0" />
+                <Button layoutX="345.0" layoutY="65.0" mnemonicParsing="false" onAction="#handleDir" text="Обзор..." />
+                <Button layoutX="115.0" layoutY="100.0" mnemonicParsing="false" onAction="#handleCancel" text="Очистить" />
+                <Button fx:id="continueButton" disable="true" layoutX="15.0" layoutY="100.0" mnemonicParsing="false" onAction="#handleNext" text="Начать поиск" />
+                <CheckBox fx:id="bypassAccess" layoutX="15.0" layoutY="135.0" mnemonicParsing="false" selected="true" text="Обходить запрет доступа" />
             </children>
         </AnchorPane>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="287.0" prefWidth="512.0">
             <children>
                 <TableView fx:id="foundFilesList" layoutY="73.0" prefHeight="265.0" prefWidth="512.0">
                     <columns>
-                        <TableColumn fx:id="fileName" editable="false" prefWidth="272.0" text="Имя"/>
-                        <TableColumn fx:id="fileChangeDate" editable="false" prefWidth="102.0" text="Дата изменения"/>
-                        <TableColumn fx:id="fileType" editable="false" prefWidth="74.0" text="Тип"/>
-                        <TableColumn fx:id="fileSize" editable="false" prefWidth="63.0" text="Размер"/>
+                        <TableColumn fx:id="fileName" editable="false" prefWidth="266.0" text="Имя" />
+                        <TableColumn fx:id="fileChangeDate" editable="false" prefWidth="102.0" text="Дата изменения" />
+                        <TableColumn fx:id="fileType" editable="false" prefWidth="65.0" text="Тип" />
+                        <TableColumn fx:id="fileSize" editable="false" prefWidth="78.0" text="Размер (KB)" />
                     </columns>
                 </TableView>
                 <Label layoutX="188.0" layoutY="4.0" text="Найденные файлы">
                     <font>
-                        <Font size="16.0"/>
+                        <Font size="16.0" />
                     </font>
                 </Label>
-                <TextField fx:id="foundFilesAmount" editable="false" layoutX="136.0" layoutY="37.0" prefHeight="25.0"
-                           prefWidth="161.0"/>
+                <TextField fx:id="foundFilesAmount" editable="false" layoutX="136.0" layoutY="37.0" prefHeight="25.0" prefWidth="161.0" />
                 <Label layoutX="14.0" layoutY="39.0" text="Найдено файлов:">
                     <font>
-                        <Font size="14.0"/>
+                        <Font size="14.0" />
                     </font>
                 </Label>
-                <Label fx:id="indicatorLabel" layoutX="450.0" layoutY="51.0" text="Поиск..."/>
-                <ProgressIndicator fx:id="progressIndicator" layoutX="456.0" layoutY="9.0" progress="0.0"/>
+                <Label fx:id="indicatorLabel" layoutX="445.0" layoutY="51.0" text="Поиск..." />
+                <ProgressIndicator fx:id="progressIndicator" layoutX="450.0" layoutY="9.0" progress="0.0" />
+            <Button fx:id="saveResBtn" disable="true" layoutX="435.0" layoutY="344.0" mnemonicParsing="false" onAction="#handleSaveRes" text="Сохранить" />
+            <Button fx:id="stopSearchBtn" disable="true" layoutX="307.0" layoutY="344.0" mnemonicParsing="false" onAction="#handleStopSearch" text="Остановить поиск" />
+            <Label fx:id="cancelledLabel" layoutX="304.0" layoutY="41.0" text="(поиск был прерван!)" visible="false" />
             </children>
         </AnchorPane>
     </items>

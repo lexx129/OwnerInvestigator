@@ -59,7 +59,7 @@ public class mainController {
     @FXML
     private CheckBox dirBypassAccess;
     private Stage dialogStage;
-    private Properties props;
+    public static Properties props;
 
 
     private void setMain(Main main) {
@@ -145,14 +145,14 @@ public class mainController {
 //        System.out.println(file1.getAbsolutePath());
         OutputStream os;
         File initial;
-        if (props.getProperty("file_last_directory") != null) {
-            initial = new File(props.getProperty("file_last_directory"));
+        if (props.getProperty("root_lastSelectedFile") != null) {
+            initial = new File(props.getProperty("root_lastSelectedFile"));
             fileChooser.setInitialDirectory(initial);
         }
         File file = fileChooser.showOpenDialog(dialogStage);
         if (file != null) {
             os = new FileOutputStream(".\\ownerInvestigator.properties");
-            props.setProperty("file_last_directory", file.getParent());
+            props.setProperty("root_lastSelectedFile", file.getParent());
             props.store(os, null);
             os.close();
             pathToFile = file.toPath();
@@ -167,14 +167,14 @@ public class mainController {
         dirChooser.setTitle("Выбрать папку...");
         OutputStream os;
         File initial;
-        if (props.getProperty("dir_last_directory") != null) {
-            initial = new File(props.getProperty("dir_last_directory"));
+        if (props.getProperty("root_lastSelectedDir") != null) {
+            initial = new File(props.getProperty("root_lastSelectedDir"));
             dirChooser.setInitialDirectory(initial);
         }
         File file = dirChooser.showDialog(dialogStage);
         if (file != null) {
             os = new FileOutputStream(".\\ownerInvestigator.properties");
-            props.setProperty("dir_last_directory", file.getParent());
+            props.setProperty("root_lastSelectedDir", file.getParent());
             props.store(os, null);
             os.close();
             pathToDir = file.toPath();

@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="com4j">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../com4j-20120426-2/com4j.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../com4j/com4j.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

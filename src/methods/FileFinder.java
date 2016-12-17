@@ -3,15 +3,20 @@ package methods;
 import classes.Main;
 import classes.myFile;
 import controllers.getOwnerCtrl;
-import controllers.searchBySidResultCtrl;
 import controllers.searchFilesBySidCtrl;
 import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 // Класс, реализующий функционал прохода по папкам
 
@@ -25,6 +30,7 @@ public class FileFinder extends SimpleFileVisitor<Path> {
     public String sidPattern;
     private searchFilesBySidCtrl searcherCtrl;
     private getOwnerCtrl ownerCtrl;
+    private String currDeniedPath;
 
     public FileFinder(boolean toBypass) {
         searcherCtrl = new searchFilesBySidCtrl();
@@ -34,25 +40,39 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 
     private void compare(Path path) throws IOException {
         String currOwnerSid;
-        currOwnerSid = ownerCtrl.getSid(Files.getOwner(path.toAbsolutePath()));
+        try {
+            currOwnerSid = ownerCtrl.getSid(Files.getOwner(path.toAbsolutePath()));
+            if (currOwnerSid.equals(sidPattern)) {
+                numMatches++;
+                myFile file = new myFile(path.toString());
+                //   Main.filesOfUser.add(file);
 
-        if (currOwnerSid.equals(sidPattern)) {
-            numMatches++;
-            myFile file = new myFile(path.toString());
-            //   Main.filesOfUser.add(file);
-
-            Main.filesOfUser.add(file);
+                Main.filesOfUser.add(file);
+            }
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+        catch (AccessDeniedException exc){
+            System.out.println("No access to file " + path.toString());
+            exc.printStackTrace();
         }
     }
 
-    private void processDenied(Path deniedPath) {
+    private void processDenied(Path deniedPath) throws ExecutionException, InterruptedException {
         AclManager manager = new AclManager();
-
-        try {
-            manager.getFileAccess(System.getProperty("user.name"), deniedPath.toFile());
-            compare(deniedPath);
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | IOException e) {
-            e.printStackTrace();
+        FutureTask<String> futureTask = new FutureTask(
+                new AcceptanceDialog()
+        );
+        currDeniedPath = String.valueOf(deniedPath);
+        Platform.runLater(futureTask);
+        String res = futureTask.get();
+        if (res.equals("Y")) {
+            try {
+                manager.getFileAccess(System.getProperty("user.name"), deniedPath.toFile());
+                compare(deniedPath);
+            } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -66,7 +86,7 @@ public class FileFinder extends SimpleFileVisitor<Path> {
             System.out.println("Найденные файлы:");
 //            System.out.println("Files found: ");
             for (File found_file : Main.filesOfUser) {
-                System.out.println(String.valueOf(found_file));
+//                System.out.println(String.valueOf(found_file));
 //                System.out.println(found_file);
             }
             if (!check_failed.isEmpty()) {
@@ -87,17 +107,46 @@ public class FileFinder extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
 //        System.out.println("Now going to: " + dir.toAbsolutePath());
-        return FileVisitResult.CONTINUE;
+        if (Files.isReadable(dir))
+            return FileVisitResult.CONTINUE;
+        System.out.println("Don't have access to " + dir.toString());
+        return FileVisitResult.SKIP_SUBTREE;
     }
 
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
         System.out.println("Access to file '" + file.toString() + "' is denied");
         if (bypassAccess)
-            processDenied(file);
+            try {
+                processDenied(file);
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
         if (!check_failed.contains(file.toFile()))
             check_failed.add(file.toFile());
         return FileVisitResult.CONTINUE;
     }
 
+    private class AcceptanceDialog implements Callable<String> {
+        @Override
+        public String call() throws Exception {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setHeaderText("Подтвердите действие");
+            alert.setContentText("У вас нет доступа к '" + currDeniedPath +
+                    "'\nВы хотите его получить?");
+            ButtonType yes = new ButtonType("Да");
+            ButtonType no = new ButtonType("Нет");
+            alert.getButtonTypes().setAll(yes, no);
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get() == yes) {
+                System.out.printf("Надо брать");
+                return ("Y");
+            }
+            if (result.get() == no) {
+                System.out.println("Не будем брать");
+                return ("NO");
+            }
+            return null;
+        }
+    }
 }

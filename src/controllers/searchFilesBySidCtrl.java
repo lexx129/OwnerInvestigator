@@ -26,11 +26,11 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import methods.searchBySidService;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
+import java.util.Properties;
 
 // Контроллер формы, отвечающей за поиск всех файлов
 // владельца с выбранным SID из списка
@@ -58,26 +58,42 @@ public class searchFilesBySidCtrl {
     @FXML
     TextField searchTarget;
     @FXML
+    Label cancelledLabel;
+    @FXML
     TextField foundFilesAmount;
     @FXML
     ProgressIndicator progressIndicator;
     @FXML
     Label indicatorLabel;
-    public ObservableList<myFile> foundFiles;
+    @FXML
+    Button stopSearchBtn;
+    @FXML
+    Button saveResBtn;
 
 
     private Stage dialogStage;
     private String pathToSearch;
-    public Task<ObservableList<myFile>> task;
+    private Task<ObservableList<myFile>> task;
     public ObservableValue<String> value1;
-    Thread t;
-    Main main;
+    private Thread t;
 
     @FXML
-    private void handleDir(ActionEvent e) {
+    private void handleDir(ActionEvent e) throws IOException {
         DirectoryChooser dirChooser = new DirectoryChooser();
+        mainController mCtrl = new mainController();
+        OutputStream os;
+        File initial;
+        if (mainController.props.getProperty("sidSearcher_lastSelectedDir") != null) {
+            initial = new File(mainController.props.getProperty("sidSearcher_lastSelectedDir"));
+            dirChooser.setInitialDirectory(initial);
+        }
         File file = dirChooser.showDialog(dialogStage);
         if (file != null) {
+            os = new FileOutputStream(".\\ownerInvestigator.properties");
+            mainController.props.setProperty("sidSearcher_lastSelectedDir", file.getParent());
+            mainController.props.store(os, null);
+            os.close();
+
             pathToSearch = file.getAbsolutePath();
             continueButton.setDisable(false);
             pathToSearchField.setText(file.toString());
@@ -105,7 +121,7 @@ public class searchFilesBySidCtrl {
     //инициализация таблицы вывода найденных файлов и фонового сервиса, выполняющего поиск
     @FXML
     void initialize() {
-        this.main = new Main();
+        Main main = new Main();
 
         //        searchTarget.setText(Main.chosenUser.getSid());
         foundFilesList.setPlaceholder(new Label("Нет элементов для отображения"));
@@ -115,7 +131,7 @@ public class searchFilesBySidCtrl {
         fileType.setCellValueFactory(new PropertyValueFactory<File, String>("type"));
         fileSize.setCellValueFactory(new PropertyValueFactory<File, Long>("size"));
 
-
+        progressIndicator.setVisible(false);
 
         foundFilesList.setRowFactory(new Callback<TableView<myFile>, TableRow<myFile>>() {
             @Override
@@ -147,54 +163,53 @@ public class searchFilesBySidCtrl {
     }
 
     private void initSearch() {
-        foundFiles = FXCollections.observableArrayList();
+        Main.filesOfUser = FXCollections.observableArrayList();
 
-        ObservableValue<String> value = new ReadOnlyObjectWrapper<>(String.valueOf(Main.filesOfUser.size()));
-        ObservableValue<String> value1 = new SimpleStringProperty(String.valueOf(Main.filesOfUser.size()));
+        cancelledLabel.setVisible(false);
         //связываем таблицу с найденными файлами с переменной, куда они сохраняются
-
         foundFilesList.setItems(Main.filesOfUser);
-        foundFilesAmount.setText("0");
+
+        stopSearchBtn.setDisable(false);
+        saveResBtn.setDisable(false);
+
         task = new Task<ObservableList<myFile>>() {
             @Override
             protected ObservableList<myFile> call() throws Exception {
                 String targetSid = Main.chosenUser.getSid();
-//                System.out.println("Reference target is: " + owner.toString());
-              //  ObservableList<myFile> foundFiles = FXCollections.observableArrayList();
-//        System.out.println("Владелец целевого файла:  " + owner.toString());
-                //   ArrayList<File> found_files;
                 File dir = new File(pathToSearch);
                 Path startingDir = dir.toPath();
                 FileFinder finder = new FileFinder(bypassAccess.isSelected());
                 finder.sidPattern = targetSid;
-//                main.showFileSearcherLayout("foundFiles");
-
-                    Files.walkFileTree(startingDir, finder);
-                    updateMessage(String.valueOf(Main.filesOfUser.size()));
-
-                //   found_files = finder.found_files;
+                updateMessage("0");
+                Files.walkFileTree(startingDir, finder);
+                updateMessage(String.valueOf(Main.filesOfUser.size()));
                 finder.done();
-                return foundFiles;
+//                return foundFiles;
+                return null;
             }
+
+            @SuppressWarnings("deprecation")
+            @Override
+            protected void cancelled() {
+                updateMessage(String.valueOf(Main.filesOfUser.size()));
+                cancelledLabel.setVisible(true);
+                if (t != null)
+                    t.stop();
+                super.cancelled();
+            }
+
+            //            @Override
+//            protected void cancelled() {
+//                if
+//            }
         };
+
 
         Platform.setImplicitExit(false);
         // настраиваем видимость анимации загрузки и подписи только во время поиска
         progressIndicator.visibleProperty().bind(task.runningProperty());
         indicatorLabel.visibleProperty().bind(task.runningProperty());
 
-        Main.filesOfUser.addListener(new ListChangeListener<myFile>() {
-            @Override
-            public void onChanged(Change<? extends myFile> c) {
-//                while (c.next()){
-//                    if (c.wasAdded())
-//                        setCounter(c.getAddedSize());
-////
-//                }
-               // if (Main.filesOfUser.size() % delay == 0)
-                    setCounter(Main.filesOfUser.size());
-            }
-        });
 
         progressIndicator.setProgress(-1d);
 //        Main.searchService.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -212,11 +227,14 @@ public class searchFilesBySidCtrl {
 //                System.out.println(event.getSource().getMessage());
 //            }
 //        });
+
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
-              //  foundFilesList.setItems(foundFiles);
+                //  foundFilesList.setItems(foundFiles);
                 progressIndicator.setProgress(0d);
+                saveResBtn.setDisable(true);
+                stopSearchBtn.setDisable(true);
             }
         });
         task.setOnFailed(new EventHandler<WorkerStateEvent>() {
@@ -226,15 +244,45 @@ public class searchFilesBySidCtrl {
                 Throwable exc = event.getSource().getException();
                 exc.printStackTrace();
                 System.out.println(event.getEventType().getName());
+                saveResBtn.setDisable(true);
+                stopSearchBtn.setDisable(true);
+            }
+        });
+        task.setOnCancelled(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                progressIndicator.setProgress(0d);
 
+                saveResBtn.setDisable(true);
+                stopSearchBtn.setDisable(true);
             }
         });
 
-
-        Thread t = new Thread(task);
-      //  foundFilesAmount.textProperty().bind(value1);
+        t = new Thread(task);
+        foundFilesAmount.textProperty().bind(task.messageProperty());
         t.setDaemon(true);
         t.start();
+    }
+
+    @FXML
+    @SuppressWarnings("deprecation")
+    private void handleStopSearch() {
+        task.cancel();
+//        try {
+//        //    foundFilesAmount.setText(String.valueOf(Main.filesOfUser.size()));
+//
+//            foundFilesList.setItems(FXCollections.observableArrayList());
+//            t.stop();
+//
+//        } catch (Error e) {
+//            System.out.println("Successfully stopped");
+//            e.printStackTrace();
+//        }
+    }
+
+    @FXML
+    private void handleSaveRes() {
+
     }
 
     public void setCounter(int number) {

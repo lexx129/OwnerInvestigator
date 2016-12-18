@@ -22,13 +22,13 @@ public class AclManager {
 
         serverObj = acl.ClassFactory.createSetACLCOMServer();
 
-        cookie = serverObj.advise(_ISetACLCOMServerEvents.class, new _ISetACLCOMServerEvents() {
-            @Override
-            public void messageEvent(String message) {
-//                super.messageEvent(message);
-                System.out.println(message);
-            }
-        });
+//        cookie = serverObj.advise(_ISetACLCOMServerEvents.class, new _ISetACLCOMServerEvents() {
+//            @Override
+//            public void messageEvent(String message) {
+////                super.messageEvent(message);
+//                System.out.println(message);
+//            }
+//        });
 
         int returnCode = serverObj.sendMessageEvents(true);
         if (returnCode != 0) {                                   // успешно
@@ -123,17 +123,60 @@ public class AclManager {
             return -1;
         }
         System.out.println("**Previous owner is restored**");
-        cookie.close();
+//        cookie.close();
         ComObjectCollector collector = new ComObjectCollector();
         collector.disposeAll();
-     //   serverObj.dispose();
+        //   serverObj.dispose();
         return 0;
 
 //         SetACL -on <name> -ot <type> -actn restore -bckp <backup_file_name> -rec cont_obj
-
-
     }
 
+    int removeForbiddance(String username, File file) {
+
+        serverObj = acl.ClassFactory.createSetACLCOMServer();
+
+        cookie = serverObj.advise(_ISetACLCOMServerEvents.class, new _ISetACLCOMServerEvents() {
+            @Override
+            public void messageEvent(String message) {
+//                super.messageEvent(message);
+                System.out.println(message);
+            }
+        });
+
+        int returnCode = serverObj.sendMessageEvents(true);
+        if (returnCode != 0) {                                   // успешно
+            System.err.println("Can't initialize Message Events");
+        }
+
+        System.out.println("**Removing all permissions for user " + username + " **");
+        returnCode = serverObj.setObject(file.getAbsolutePath(), 1);
+        if (returnCode != 0) {
+            System.err.println("Can't set object");
+            return -1;
+        }
+
+        returnCode = serverObj.addAction(4096); // 4096 - режим работы с правами по пользователям
+        if (returnCode != 0) {
+            System.err.println("Can't set action");
+            return -1;
+        }
+
+        returnCode = serverObj.addTrustee(username, username, 512, 1); // 512 - режим удаления всех прав для пользователя
+        if (returnCode != 0) {
+            System.err.println("Can't delete permissions");
+            return -1;
+        }
+
+        returnCode = serverObj.run();
+        if (returnCode != 0) {
+            System.err.println("Can't run phaze 0 (delete permissions)");
+        } else System.out.println("**Access rigths for " + username + " were cleaned out.**");
+
+        ComObjectCollector collector = new ComObjectCollector();
+        collector.disposeAll();
+        return 0;
+    }
 //    public static void main(String[] args) throws NoSuchMethodException, IllegalAccessException, InstantiationException, IOException {
 //
 //        UserPrincipal user = FileSystems.getDefault().getUserPrincipalLookupService().lookupPrincipalByName(System.getProperty("user.name"));

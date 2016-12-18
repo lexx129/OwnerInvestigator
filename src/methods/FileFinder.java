@@ -42,9 +42,10 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 
     private void compare(Path file) throws IOException {
         String currOwnerSid;
-        accessDeniedCaught = 0;
+        //       accessDeniedCaught = 0;
         try {
             currOwnerSid = ownerCtrl.getSid(Files.getOwner(file.toAbsolutePath()));
+            accessDeniedCaught = 0;
             if (currOwnerSid.equals(sidPattern)) {
                 numMatches++;
                 myFile found = new myFile(file.toString());
@@ -81,7 +82,7 @@ public class FileFinder extends SimpleFileVisitor<Path> {
             try {
                 if (accessDeniedCaught > 1) { // если попытка выдать доступ не удалась, нужно удалить запрет
                     manager.removeForbiddance(System.getProperty("user.name"), deniedPath.toFile());
-                    accessDeniedCaught--;
+                    accessDeniedCaught = 0;
                 }
                 manager.getFileAccess(System.getProperty("user.name"), deniedPath.toFile());
                 if (deniedPath.toFile().isFile())
@@ -122,10 +123,21 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-//        System.out.println("Now going to: " + dir.toAbsolutePath());
-        if (Files.isReadable(dir))
+        System.out.println("Now going to: " + dir.toAbsolutePath());
+        if (Files.isWritable(dir)) // проверяем наличие доступа к директории
             return FileVisitResult.CONTINUE;
-        System.out.println("Don't have access to " + dir.toString());
+        else {
+            System.out.println("Don't have access to " + dir.toString());
+            if (!bypassAccess) { // если не нужно обходить доступ, пропускаем эту папку
+                Main.failedFoldersAmount++;
+                return FileVisitResult.SKIP_SUBTREE;
+            }
+        }
+        try {
+            processDenied(dir); // иначе пытаемся получить права и обработать файлы внутри
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+        }
         return FileVisitResult.SKIP_SUBTREE;
     }
 
@@ -138,6 +150,7 @@ public class FileFinder extends SimpleFileVisitor<Path> {
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
+
         return FileVisitResult.CONTINUE;
     }
 
@@ -150,7 +163,7 @@ public class FileFinder extends SimpleFileVisitor<Path> {
                 alert.setContentText("У вас нет доступа к '" + currDeniedPath +
                         "'\nВы действительно хотите его получить?");
             } else
-            alert.setContentText("Доступ к '" + currDeniedPath + "' запрещен. \nСбросить?");
+                alert.setContentText("Доступ к '" + currDeniedPath + "' запрещен. \nСбросить?");
             ButtonType yes = new ButtonType("Да");
             ButtonType no = new ButtonType("Нет");
             alert.getButtonTypes().setAll(yes, no);
@@ -161,6 +174,7 @@ public class FileFinder extends SimpleFileVisitor<Path> {
             }
             if (result.get() == no) {
                 System.out.println("Не будем брать");
+                Main.failedFilesAmount++;
                 return ("NO");
             }
             return null;

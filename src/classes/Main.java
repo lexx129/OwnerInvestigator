@@ -52,6 +52,8 @@ public class Main extends Application {
     // найденные файлы выбранного из списка владельца
     public static ObservableList<myFile> filesOfUser = FXCollections.observableArrayList();
     public static searchBySidService searchService;
+    public static int failedFilesAmount; //сколько файлов не было обработано
+    public static int failedFoldersAmount;
 
     public List _listeners = new ArrayList();
 

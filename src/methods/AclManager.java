@@ -136,13 +136,13 @@ public class AclManager {
 
         serverObj = acl.ClassFactory.createSetACLCOMServer();
 
-        cookie = serverObj.advise(_ISetACLCOMServerEvents.class, new _ISetACLCOMServerEvents() {
-            @Override
-            public void messageEvent(String message) {
-//                super.messageEvent(message);
-                System.out.println(message);
-            }
-        });
+//        cookie = serverObj.advise(_ISetACLCOMServerEvents.class, new _ISetACLCOMServerEvents() {
+//            @Override
+//            public void messageEvent(String message) {
+////                super.messageEvent(message);
+//                System.out.println(message);
+//            }
+//        });
 
         int returnCode = serverObj.sendMessageEvents(true);
         if (returnCode != 0) {                                   // успешно
@@ -175,6 +175,7 @@ public class AclManager {
 
         ComObjectCollector collector = new ComObjectCollector();
         collector.disposeAll();
+        collector.remove(serverObj);
         return 0;
     }
 //    public static void main(String[] args) throws NoSuchMethodException, IllegalAccessException, InstantiationException, IOException {

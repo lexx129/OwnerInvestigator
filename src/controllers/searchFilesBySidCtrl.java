@@ -16,7 +16,12 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import methods.FileFinder;
 import classes.Main;
@@ -26,10 +31,13 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import methods.searchBySidService;
 
+import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.Properties;
 
 // Контроллер формы, отвечающей за поиск всех файлов
@@ -163,8 +171,10 @@ public class searchFilesBySidCtrl {
     }
 
     private void initSearch() {
+        // очищаем переменные перед каждым новым поиском
         Main.filesOfUser = FXCollections.observableArrayList();
-
+        Main.failedFilesAmount = 0;
+        Main.failedFoldersAmount = 0;
         cancelledLabel.setVisible(false);
         //связываем таблицу с найденными файлами с переменной, куда они сохраняются
         foundFilesList.setItems(Main.filesOfUser);
@@ -181,6 +191,8 @@ public class searchFilesBySidCtrl {
                 FileFinder finder = new FileFinder(bypassAccess.isSelected());
                 finder.sidPattern = targetSid;
                 updateMessage("0");
+                System.out.println(Arrays.toString(Files.list(startingDir).toArray()));
+
                 Files.walkFileTree(startingDir, finder);
                 updateMessage(String.valueOf(Main.filesOfUser.size()));
                 finder.done();
@@ -233,7 +245,8 @@ public class searchFilesBySidCtrl {
             public void handle(WorkerStateEvent event) {
                 //  foundFilesList.setItems(foundFiles);
                 progressIndicator.setProgress(0d);
-                saveResBtn.setDisable(true);
+
+                saveResBtn.setDisable(false);
                 stopSearchBtn.setDisable(true);
             }
         });
@@ -281,9 +294,51 @@ public class searchFilesBySidCtrl {
     }
 
     @FXML
-    private void handleSaveRes() {
+    private void handleSaveRes() throws IOException {
+        FileChooser savePathChooser = new FileChooser();
+        File savePath = savePathChooser.showSaveDialog(dialogStage);
+        if (savePath != null) {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(savePath.getAbsoluteFile()));
+            bw.write("Поиск файлов владельца с SID ='" + Main.chosenUser.getSid() +
+                    "' успешно завершен. \r\nНайдено файлов: " + Main.filesOfUser.size() +
+                    "\r\nНе удалось обработать: " + Main.failedFilesAmount + "; В том числе папок: " +
+                    Main.failedFoldersAmount + "\r\n\r\nСписок найденных файлов: \r\n");
+            bw.flush();
+            for (File foundFile : Main.filesOfUser) {
+                bw.write(foundFile.getAbsolutePath() + "\r\n");
+            }
+            bw.flush();
+            bw.close();
 
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Сохранено");
+            alert.setContentText("Результат сохранен в '" + savePath.getAbsolutePath() + "'");
+            ButtonType openBtn = new ButtonType("Открыть сохраненное");
+            ButtonType okBtn = new ButtonType("OK");
+            alert.getButtonTypes().setAll(openBtn, okBtn);
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get() == openBtn) {
+                openSavedInfo(savePath);
+            }
+            if (result.get() == okBtn)
+                alert.close();
+        }
     }
+
+    private void openSavedInfo(File savePath) {
+        Desktop desktop = null;
+        if (Desktop.isDesktopSupported()) {
+            desktop = Desktop.getDesktop();
+        }
+        try {
+            if (desktop != null) {
+                desktop.open(new File(savePath.getAbsolutePath()));
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+
 
     public void setCounter(int number) {
 //      Long currValue = Long.valueOf(foundFilesAmount.getText());

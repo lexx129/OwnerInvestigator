@@ -295,9 +295,22 @@ public class searchFilesBySidCtrl {
 
     @FXML
     private void handleSaveRes() throws IOException {
+        File lastSavedPath;
         FileChooser savePathChooser = new FileChooser();
+        OutputStream os;
+        if (mainController.props.getProperty("sidSearcher_lastSavedDir") != null) {
+            lastSavedPath = new File(mainController.props.getProperty("sidSearcher_lastSavedDir"));
+            savePathChooser = new FileChooser();
+            savePathChooser.setInitialDirectory(lastSavedPath);
+        }
+
         File savePath = savePathChooser.showSaveDialog(dialogStage);
         if (savePath != null) {
+            os = new FileOutputStream(".\\ownerInvestigator.properties");
+            mainController.props.setProperty("sidSearcher_lastSavedDir", savePath.getAbsolutePath());
+            mainController.props.store(os, null);
+            os.close();
+
             BufferedWriter bw = new BufferedWriter(new FileWriter(savePath.getAbsoluteFile()));
             bw.write("Поиск файлов владельца с SID ='" + Main.chosenUser.getSid() +
                     "' успешно завершен. \r\nНайдено файлов: " + Main.filesOfUser.size() +
@@ -312,6 +325,7 @@ public class searchFilesBySidCtrl {
 
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Сохранено");
+            alert.setHeaderText("");
             alert.setContentText("Результат сохранен в '" + savePath.getAbsolutePath() + "'");
             ButtonType openBtn = new ButtonType("Открыть сохраненное");
             ButtonType okBtn = new ButtonType("OK");

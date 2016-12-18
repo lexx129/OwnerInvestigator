@@ -138,7 +138,7 @@ public class FileFinder extends SimpleFileVisitor<Path> {
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
-        return FileVisitResult.SKIP_SUBTREE;
+        return FileVisitResult.CONTINUE;
     }
 
     @Override

@@ -1,44 +1,35 @@
 package controllers;
 
+import classes.Main;
 import classes.myFile;
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 import methods.FileFinder;
-import classes.Main;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.Stage;
-import methods.searchBySidService;
 
 import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.Properties;
 
 // Контроллер формы, отвечающей за поиск всех файлов
 // владельца с выбранным SID из списка
@@ -82,13 +73,11 @@ public class searchFilesBySidCtrl {
     private Stage dialogStage;
     private String pathToSearch;
     private Task<ObservableList<myFile>> task;
-    public ObservableValue<String> value1;
     private Thread t;
 
     @FXML
     private void handleDir(ActionEvent e) throws IOException {
         DirectoryChooser dirChooser = new DirectoryChooser();
-        mainController mCtrl = new mainController();
         OutputStream os;
         File initial;
         if (mainController.props.getProperty("sidSearcher_lastSelectedDir") != null) {
@@ -129,15 +118,14 @@ public class searchFilesBySidCtrl {
     //инициализация таблицы вывода найденных файлов и фонового сервиса, выполняющего поиск
     @FXML
     void initialize() {
-        Main main = new Main();
 
         //        searchTarget.setText(Main.chosenUser.getSid());
         foundFilesList.setPlaceholder(new Label("Нет элементов для отображения"));
         // Описываем столбцы таблицы, имена должны совпадать с именами полей
-        fileName.setCellValueFactory(new PropertyValueFactory<File, String>("name"));
-        fileChangeDate.setCellValueFactory(new PropertyValueFactory<File, String>("changeDate"));
-        fileType.setCellValueFactory(new PropertyValueFactory<File, String>("type"));
-        fileSize.setCellValueFactory(new PropertyValueFactory<File, Long>("size"));
+        fileName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        fileChangeDate.setCellValueFactory(new PropertyValueFactory<>("changeDate"));
+        fileType.setCellValueFactory(new PropertyValueFactory<>("type"));
+        fileSize.setCellValueFactory(new PropertyValueFactory<>("size"));
 
         progressIndicator.setVisible(false);
 
@@ -278,7 +266,6 @@ public class searchFilesBySidCtrl {
     }
 
     @FXML
-    @SuppressWarnings("deprecation")
     private void handleStopSearch() {
         task.cancel();
 //        try {
@@ -352,13 +339,4 @@ public class searchFilesBySidCtrl {
             ioe.printStackTrace();
         }
     }
-
-
-    public void setCounter(int number) {
-//      Long currValue = Long.valueOf(foundFilesAmount.getText());
-//        foundFilesAmount.setText(String.valueOf(currValue + number));
-//        foundFiles = number;
-        foundFilesAmount.setText(String.valueOf(number));
-    }
-
 }

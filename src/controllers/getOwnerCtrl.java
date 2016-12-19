@@ -193,7 +193,12 @@ public class getOwnerCtrl implements Initializable {
             e.printStackTrace();
         } catch (NoSuchFieldException exc) {
 // SID встроенного администратора не определяется автоматически
-            return "S-1-5-32-544";
+            if (user.getName().equals("NT AUTHORITY\\СИСТЕМА"))
+                return "S-1-5-18";
+            if (user.getName().equals("BUILTIN\\Администраторы"))
+                return "S-1-5-32-544";
+            if (user.getName().equals("NT SERVICE\\TrustedInstaller"))
+                return "S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464";
         }
         return result;
     }

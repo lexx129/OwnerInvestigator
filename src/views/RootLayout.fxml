@@ -51,6 +51,8 @@
                                         <Font size="14.0" />
                                     </font>
                                 </Label>
+                        <ProgressIndicator fx:id="scanIndicator" layoutX="272.0" layoutY="93.0" progress="0.0" />
+                        <Label layoutX="314.0" layoutY="105.0" text="Идет поиск.." />
                             </children>
                         </AnchorPane>
                     </content>
